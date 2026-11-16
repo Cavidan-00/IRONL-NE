@@ -253,12 +253,23 @@ const UI={
     highlight.style.width=Math.round(rect.width+10)+'px';
     highlight.style.height=Math.round(rect.height+10)+'px';
   },
-  updateTutorialHighlight(el,msg){
+    updateTutorialHighlight(el,msg){
     const highlight=$('#tutorial-highlight');
     const message=$('#tutorial-message');
     document.querySelectorAll('.tutorial-highlight').forEach(e=>e.classList.remove('tutorial-highlight'));
     const selectionPanel=$('#sel-panel');
     if(selectionPanel)selectionPanel.classList.toggle('tutorial-upgrade-focus',tutorialStep===3);
+
+    // --- YENİ: Tutorial pəncərəsinin yerini tənzimləyirik (3 və 4-cü addımlar sağda) ---
+    if(tutorialStep===3 || tutorialStep===4){
+      message.classList.add('tut-right');
+      message.classList.remove('tut-left');
+    } else {
+      message.classList.add('tut-left');
+      message.classList.remove('tut-right');
+    }
+    // ---------------------------------------------------------------------------------
+
     this.tutorialTargetEl=el||null;
     this.tutorialSpotEl=(tutorialStep===3||tutorialStep===4)?$('#sel-panel'):null; // light the whole defense panel
     this.startTutorialFollow();
@@ -284,8 +295,8 @@ const UI={
       $('#tutorial-counter').textContent=String(step).padStart(2,'0')+' / 05';
     }
     
-    const meta=steps[step]; // <--- BU SƏTRİ GERİ QAYTARDIQ
-    $('#tutorial-title').textContent=meta.title; // <--- BU SƏTRİ DƏ GERİ QAYTARDIQ
+    const meta=steps[step];
+    $('#tutorial-title').textContent=meta.title;
     $('#tutorial-copy').textContent=msg||'';
     $('#tutorial-action').textContent=meta.action;
     $('#tutorial-progress').innerHTML=Array.from({length:5},(_,i)=>
