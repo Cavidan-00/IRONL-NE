@@ -8,7 +8,8 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{margin:0;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:var(--font);user-select:none;-webkit-user-select:none;touch-action:none}
+  font-family:var(--font);user-select:none;-webkit-user-select:none;}
+canvas#c{touch-action:none;} /* Yalnız oyun sahəsi üçün sürüşdürməni idarə edirik */
 canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
 #vignette{position:fixed;inset:0;pointer-events:none;z-index:2;
   background:radial-gradient(circle at 50% 45%,transparent 35%,rgba(0,4,8,.55) 100%)}
@@ -128,6 +129,7 @@ h3{font-size:14px;letter-spacing:.18em}
   border:1px solid var(--line);background:#081018;
   transition:transform .25s ease,box-shadow .25s ease,border-color .25s;
   box-shadow:0 12px 40px rgba(0,0,0,.5)}
+.map-card * { pointer-events: none !important; }
 .map-card:hover{transform:translateY(-4px);border-color:var(--accent);
   box-shadow:0 18px 50px rgba(0,0,0,.6),0 0 28px rgba(94,231,255,.14)}
 .map-card .preview{position:absolute;inset:0;background-size:cover;background-position:center;
@@ -189,6 +191,7 @@ h3{font-size:14px;letter-spacing:.18em}
   border:1px solid var(--line);background:linear-gradient(160deg,rgba(12,28,40,.9),rgba(5,12,18,.95));
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
   transition:transform .2s,border-color .2s,box-shadow .2s}
+.level-node * { pointer-events: none !important; }
 .level-node:hover{border-color:var(--accent);transform:translateY(-3px);box-shadow:0 0 24px rgba(94,231,255,.12)}
 .level-node .num{font-size:26px;font-weight:800;letter-spacing:.04em}
 .level-node .lbl{font-size:8px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase}
@@ -469,8 +472,11 @@ h3{font-size:14px;letter-spacing:.18em}
   padding:16px 18px 13px!important;border:1px solid rgba(255,209,102,.48)!important;
   border-radius:13px!important;background:linear-gradient(150deg,rgba(17,31,42,.98),rgba(4,11,18,.98))!important;
   box-shadow:0 18px 54px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.06)!important;
-  text-align:left!important;transform:none!important;pointer-events:auto!important;
+  text-align:left!important;transform:none!important;pointer-events:none;
   transition:opacity .2s ease,transform .2s ease;line-height:1.45;
+}
+#tutorial-message:not(.hidden){
+  pointer-events:auto!important;
 }
 .tutorial-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
 .tutorial-kicker{font-size:9px;font-weight:800;letter-spacing:.23em;color:var(--gold)}
@@ -727,81 +733,110 @@ h3{font-size:14px;letter-spacing:.18em}
   .victory-stats span { font-size: 7px; }
 }
 /* =========================================================
-   MOBILE LANDSCAPE (YANA ÇEVRİLMİŞ TELEFON) ÜÇÜN TAM DÜZƏLİŞ
+   MOBILE LANDSCAPE (YANA ÇEVRİLMİŞ TELEFON) - TAM OPTİMİZASİYA
    ========================================================= */
 @media (max-height: 600px) and (orientation: landscape) {
-  /* 1. ÜMUMİ MENYULAR (Ana Menyu, Armory və s.) */
-  #screen-menu { padding: 15px 20px; }
-  .menu-hero h1 { font-size: 44px; margin-top: 5px; }
-  .menu-hero .tagline { font-size: 11px; margin: 8px 0 15px; line-height: 1.4; }
-  .menu-top .btn.small { padding: 5px 8px; font-size: 9px; margin-bottom: 5px; }
-  .menu-actions { gap: 8px; }
-  .menu-actions .btn { padding: 8px 16px; font-size: 11px; }
-  .menu-stats { gap: 15px; }
-  .menu-stats b { font-size: 14px; }
-  .menu-stats span { font-size: 8px; }
-  
-  .page-head { padding: 15px 20px 10px; }
-  .page-head h2 { font-size: 20px; }
-  .page-head p { font-size: 10px; }
-  .level-grid { grid-template-columns: repeat(8, 1fr); gap: 8px; } /* Daha çox sütun */
-  .level-node { aspect-ratio: 1.5; }
-  .level-node .num { font-size: 16px; }
+  /* --- MENYULAR --- */
+  #screen-menu { padding: 10px 15px; }
+  .menu-hero h1 { font-size: 36px; margin-top: 0; }
+  .menu-hero .tagline { font-size: 10px; margin: 5px 0 10px; }
+  .menu-top .btn.small { padding: 4px 8px; font-size: 8px; margin-bottom: 2px; }
+  .menu-actions { gap: 6px; }
+  .menu-actions .btn { padding: 6px 12px; font-size: 10px; }
+  .menu-stats b { font-size: 12px; }
+  .menu-stats span { font-size: 7px; }
 
-  /* 2. OYUN DAXİLİ (HUD) */
-  .hud-top { top: 8px; left: 8px; right: 8px; gap: 6px; }
-  .mission-panel { padding: 6px 10px; min-width: 140px; }
-  .mission-panel .name { font-size: 11px; }
-  .mission-panel .sub { font-size: 8px; }
-  .wave-panel { padding: 6px 10px; flex: 1; }
-  .wave-row { font-size: 8px; }
-  .res-item { padding: 5px 8px; min-width: 60px; }
-  .res-item .v { font-size: 14px; }
-  .res-item .k { font-size: 7px; }
-  .ctrl { width: 28px; height: 28px; }
-  
-  /* Aşağıdakı qüllə kartları */
-  #tower-bar { padding: 4px; gap: 4px; max-height: 55px; }
-  .tower-card { min-width: 85px; padding: 4px 6px; }
-  .tower-card .tc-name { font-size: 7px; }
-  .tower-card .tc-cost { font-size: 9px; }
-  .tower-card .tc-icon { width: 18px; height: 18px; }
-  
-  /* Wave və EMP düymələri */
-  .hud-bottom { padding: 0 8px 8px; gap: 5px; }
-  #wave-btn { min-width: 140px; padding: 8px 12px; font-size: 10px; }
-  #emp-btn { min-width: 90px; min-height: 30px; padding: 4px 6px; font-size: 8px; }
-
-  /* Qüllə seçim paneli (məsələn, Gunner-i seçəndə çıxan) */
-  #sel-panel { width: 200px; bottom: 75px; padding: 8px; left: 8px; }
-  .sel-head .sel-name { font-size: 10px; }
-  .sel-stat .sk { font-size: 7px; }
-  .sel-stat .sv { font-size: 10px; }
-  .sel-actions .btn { padding: 5px; font-size: 8px; }
-
-  /* 3. TUTORIAL PƏNCƏRƏSİ (Ekranda təmiz görünməsi üçün) */
-  #tutorial-message {
-    top: 60px !important;
-    left: 10px !important;
-    width: 260px !important;
-    padding: 10px 12px !important;
-    transform: none !important;
-    border-radius: 8px !important;
+  /* --- XƏRİTƏ SEÇİMİ (LEVELS) --- */
+  .page-head { padding: 10px 15px; }
+  .page-head h2 { font-size: 18px; }
+  .page-head p { display: none; /* Mobilde təsviri gizlədirik ki, yer qalsın */ }
+  .level-wrap { padding: 0 10px; }
+  .level-grid { grid-template-columns: repeat(8, 1fr); gap: 4px; }
+  .level-node { 
+    aspect-ratio: auto; 
+    height: 65px; /* Sabit hündürlük veririk ki, klikləmə sahəsi tam olsun */
+    padding: 4px; 
+    border-radius: 6px;
   }
-  .tutorial-kicker { font-size: 7px; }
-  .tutorial-counter { font-size: 7px; padding: 2px 4px; }
-  .tutorial-title { font-size: 10px !important; margin-bottom: 4px !important; }
-  .tutorial-copy { font-size: 9px !important; line-height: 1.4 !important; }
-  .tutorial-action { margin-top: 6px; padding: 5px 7px; font-size: 8px; }
-  .tutorial-card-foot { margin-top: 6px; }
-  .tutorial-progress span { height: 2px; }
-  .tutorial-skip { font-size: 8px; padding: 5px; }
+  .level-node .num { font-size: 14px; }
+  .level-node .lbl { font-size: 6px; }
+  .level-node .stars { font-size: 8px; }
+  .level-node .routes { top: 4px; left: 4px; }
+  .level-node .boss-tag { display: none; } /* Yer tutmasın */
 
-  /* 4. NƏTİCƏ EKRANI (Victory) */
-  .modal-box { padding: 15px; }
-  .modal-box h2 { font-size: 18px; }
-  .victory-stats { margin: 10px 0; gap: 5px; }
-  .victory-stats b { font-size: 14px; }
-  .victory-stats span { font-size: 7px; }
-  .modal-actions .btn { padding: 8px 12px; font-size: 10px; }
+  /* --- OYUN DAXİLİ (HUD) - YUXARI PANELLƏR --- */
+  .hud-top { top: 5px; left: 5px; right: 5px; gap: 4px; }
+  .mission-panel { padding: 4px 8px; min-width: 120px; }
+  .mission-panel .kicker { font-size: 6px; }
+  .mission-panel .name { font-size: 9px; }
+  .mission-panel .sub { font-size: 7px; }
+  
+  .wave-panel { padding: 4px 8px; }
+  .wave-row { font-size: 7px; }
+  .wave-row b { font-size: 10px; }
+  .wave-track { height: 3px; margin-top: 4px; }
+  
+  .resources { padding: 2px; }
+  .res-item { padding: 3px 6px; min-width: 50px; }
+  .res-item .v { font-size: 12px; }
+  .res-item .k { font-size: 6px; }
+  .ctrl { width: 24px; height: 24px; font-size: 9px; }
+
+  /* --- OYUN DAXİLİ - AŞAĞI (QÜLLƏLƏR) --- */
+  .hud-bottom { padding: 0 5px 5px; gap: 4px; }
+  
+  #wave-btn { min-width: 120px; padding: 6px 10px; font-size: 9px; }
+  #emp-btn { min-width: 80px; min-height: 26px; padding: 3px 5px; font-size: 7px; }
+  
+  #tower-bar { padding: 3px; gap: 3px; max-height: 50px; }
+  .tower-card { min-width: 75px; padding: 3px 5px; gap: 4px; }
+  .tower-card .tc-icon { width: 16px; height: 16px; flex-basis: 16px; }
+  .tower-card .tc-name { font-size: 7px; letter-spacing: 0; }
+  .tower-card .tc-cost { font-size: 8px; }
+  .tower-card .tc-key, .tower-card .tc-tier { display: none; } /* Yer qazandırırıq */
+
+  /* --- QÜLLƏ İNFO PANELİ (Seçildikdə çıxan) --- */
+  #sel-panel { 
+    width: 170px; 
+    bottom: 60px; 
+    left: 5px; 
+    padding: 6px 8px; 
+    border-radius: 6px;
+  }
+  .sel-head { padding-bottom: 4px; margin-bottom: 4px; }
+  .sel-head .sel-name { font-size: 9px; }
+  .sel-head .sel-lvl { font-size: 7px; padding: 1px 3px; }
+  .sel-stats { gap: 3px 6px; margin-bottom: 6px; }
+  .sel-stat .sk { font-size: 6px; }
+  .sel-stat .sv { font-size: 9px; }
+  .sel-actions { gap: 3px; }
+  .sel-actions .btn { padding: 4px; font-size: 8px; }
+
+  /* --- TUTORIAL PƏNCƏRƏSİ (Ekranı tutmasın) --- */
+  #tutorial-message {
+    top: 55px !important;
+    left: 8px !important;
+    width: 210px !important;
+    padding: 8px 10px !important;
+    transform: none !important;
+    border-radius: 6px !important;
+  }
+  .tutorial-kicker { font-size: 6px; }
+  .tutorial-counter { font-size: 6px; padding: 1px 3px; }
+  .tutorial-title { font-size: 9px !important; margin-bottom: 3px !important; }
+  .tutorial-copy { font-size: 8px !important; line-height: 1.3 !important; }
+  .tutorial-action { margin-top: 4px; padding: 3px 5px; font-size: 7px; }
+  .tutorial-card-foot { margin-top: 4px; }
+  .tutorial-progress span { height: 2px; }
+  .tutorial-skip { font-size: 7px; padding: 3px; }
+
+  /* --- NƏTİCƏ EKRANI --- */
+  .modal-box { padding: 10px 15px; max-width: 90%; }
+  .modal-box h2 { font-size: 16px; }
+  .victory-stats { margin: 8px 0; gap: 4px; }
+  .victory-stats b { font-size: 12px; }
+  .victory-stats span { font-size: 6px; }
+  .modal-actions .btn { padding: 6px 10px; font-size: 9px; }
 }
+#ui { z-index: 10; pointer-events: none; } /* Ümumi UI bağlıdır */
+.screen.active { pointer-events: auto; } /* Yalnız aktiv ekran klik qəbul edir */

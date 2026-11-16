@@ -121,7 +121,8 @@ class Tower{
     if(this.barrel)this.barrelHomeZ=this.barrel.position.z;
     if(this.launcher)this.launcherHomeZ=this.launcher.position.z;
     this.pick=new THREE.Mesh(GEO.cyl,new THREE.MeshBasicMaterial({colorWrite:false,depthWrite:false}));
-    this.pick.position.set(plot.x,1.5,plot.z);this.pick.scale.set(2.6,3.2,2.6);
+    // YENİ: Ölçünü 2.6-dan 5.0-a qaldırırıq və hündürlüyünü artırırıq ki, lülə də içinə düşsün
+    this.pick.position.set(plot.x,2.0,plot.z);this.pick.scale.set(5.0,5.0,5.0); 
     this.pick.userData.tower=this;game.scene.add(this.pick);
     if(type==='laser'){
       this.beamGlow=new THREE.Mesh(GEO.cyl,new THREE.MeshBasicMaterial({color:0xb388ff,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false}));
