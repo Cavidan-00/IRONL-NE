@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>IRONLINE // Tactical Defense</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vignette"></div>
+<div id="damage-flash"></div>
+
+<!-- Tutorial & Warning Overlays -->
+<div id="tutorial-highlight" class="hidden" aria-hidden="true"></div>
+<aside id="tutorial-message" class="hidden" role="status" aria-live="polite">
+  <div class="tutorial-card-head">
+    <span class="tutorial-kicker">IRONLINE // FIELD TRAINING</span>
+    <span class="tutorial-counter" id="tutorial-counter">01 / 05</span>
+  </div>
+  <h3 class="tutorial-title" id="tutorial-title">SELECT YOUR FIRST DEFENSE</h3>
+  <p class="tutorial-copy" id="tutorial-copy"></p>
+  <div class="tutorial-action" id="tutorial-action">ACTION REQUIRED</div>
+  <div class="tutorial-card-foot">
+    <div class="tutorial-progress" id="tutorial-progress" aria-hidden="true"></div>
+    <button type="button" id="tutorial-skip" class="tutorial-skip">SKIP TRAINING</button>
+  </div>
+</aside>
+<div id="air-warning" class="hidden">AIR ATTACK IN 2 WAVES</div>
+
+<div id="rotate-hint">
+  <div class="eyebrow">IRONLINE</div>
+  <h2>ROTATE DEVICE</h2>
+  <p class="muted" style="font-size:12px">This tactical display is designed for landscape orientation.</p>
+</div>
+
+<div id="tower-tooltip"></div>
+
+<div id="ui">
+  <div class="screen active" id="screen-boot">
+    <div class="boot-logo">
+      <div class="eyebrow">TACTICAL DEFENSE SIMULATION</div>
+      <h1 style="margin-top:10px">IRON<span style="color:var(--accent)">LINE</span></h1>
+      <div class="boot-bar"><i></i></div>
+      <div class="boot-sub">INITIALIZING BATTLE NETWORK</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-menu">
+    <div class="menu-top">
+      <div class="menu-brand">
+        <div class="brand-mark"></div>
+        <div>
+          <div class="eyebrow" style="font-size:9px">IRONLINE</div>
+          <div style="font-size:10px;letter-spacing:.22em;color:var(--muted);margin-top:3px">GLOBAL DEFENSE COMMAND</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn small ghost" id="btn-achievements">★ ACHIEVEMENTS</button>
+        <button class="btn small ghost" id="btn-daily-gift">🎁 DAILY GIFT</button>
+        <button class="btn small ghost" id="btn-settings">SETTINGS</button>
+        <button class="btn small ghost" id="btn-howto">HOW TO PLAY</button>
+      </div>
+    </div>
+    <div class="menu-hero">
+      <div class="eyebrow">MODERN WARFARE // TOWER DEFENSE</div>
+      <h1>IRON<br><span>LINE</span></h1>
+      <p class="tagline">Command an adaptive defense network against armored columns, air raids,
+        and autonomous war machines. Build. Upgrade. Hold the line.</p>
+      <div class="menu-actions">
+        <button class="btn primary" id="btn-deploy"><span class="sweep"></span>DEPLOY</button>
+        <button class="btn gold" id="btn-upgrades"><span class="sweep"></span>⌁ UPGRADES</button>
+        <button class="btn ghost" id="btn-continue">CONTINUE CAMPAIGN</button>
+      </div>
+    </div>
+    <div class="menu-footer">
+      <div class="menu-stats">
+        <div><b id="stat-stages">01</b><span>STAGES</span></div>
+        <div><b id="stat-levels">00</b><span>MISSIONS CLEARED</span></div>
+        <div><b id="stat-stars">00</b><span>STARS</span></div>
+        <div class="gold-stat"><b id="stat-gold">0</b><span>GOLD</span></div>
+      </div>
+      <div>BUILD 2.3.0 // ACHIEVEMENTS · DAILY GIFTS · ZOOM</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-maps">
+    <div class="page-head">
+      <div class="left">
+        <div class="eyebrow">CAMPAIGN</div>
+        <h2>SELECT THEATER</h2>
+        <p>Four operational zones. Twenty missions each. Enemy armor, speed and formations intensify as you advance.</p>
+      </div>
+      <button class="btn small ghost" id="btn-maps-back">◀ MAIN MENU</button>
+    </div>
+    <div class="map-grid" id="map-grid"></div>
+    
+    <!-- Endless Banner -->
+    <div class="endless-banner" id="btn-endless-mode">
+      <div class="eb-icon">∞</div>
+      <div class="eb-text">
+        <h3>ENDLESS SURVIVAL</h3>
+        <p>Face infinite waves of enemies. Unlocks per theater after clearing its 20 main missions.</p>
+      </div>
+      <div class="eb-arrow">▶</div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-endless-maps">
+    <div class="page-head">
+      <div class="left">
+        <div class="eyebrow">SURVIVAL</div>
+        <h2>ENDLESS MODE</h2>
+        <p>Select a theater to survive as long as possible. Highscores are tracked per theater.</p>
+      </div>
+      <button class="btn small ghost" id="btn-endless-back">◀ THEATERS</button>
+    </div>
+    <div class="map-grid" id="endless-map-grid"></div>
+  </div>
+
+  <div class="screen" id="screen-levels">
+    <div class="page-head">
+      <div class="left">
+        <div class="eyebrow" id="levels-kicker">OPERATION</div>
+        <h2 id="levels-title">NEON HARBOR</h2>
+        <p id="levels-desc">Port authority sector. Rain, containers, and inbound air traffic.</p>
+      </div>
+      <button class="btn small ghost" id="btn-levels-back">◀ THEATERS</button>
+    </div>
+    <div class="level-wrap"><div class="level-grid" id="level-grid"></div></div>
+  </div>
+
+  <div class="screen" id="screen-upgrades">
+    <div class="page-head">
+      <div class="left">
+        <div class="eyebrow">COMMAND ARMORY</div>
+        <h2>PERMANENT UPGRADES</h2>
+        <p>Spend gold earned in missions to improve tower stats across the entire campaign. These bonuses stack with in-mission upgrades.</p>
+      </div>
+      <button class="btn small ghost" id="btn-upgrades-back">◀ MAIN MENU</button>
+    </div>
+    <div class="upgrade-wrap">
+      <div class="upgrade-header">
+        <div>
+          <div class="g-label">TACTICAL RESEARCH FUND</div>
+          <div class="g-sub">Each mission awards gold based on stars earned, level number, and theater. Higher tiers deliver dramatic stat gains.</div>
+        </div>
+        <div class="gold-balance">
+          <div class="gold-coin"></div>
+          <div style="text-align:right">
+            <div class="g-num" id="gold-amount">0</div>
+            <div class="g-cap">GOLD</div>
+          </div>
+        </div>
+      </div>
+      <div class="upgrade-grid" id="upgrade-grid"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-achievements">
+    <div class="page-head">
+      <div class="left">
+        <div class="eyebrow">CAREER</div>
+        <h2>ACHIEVEMENTS</h2>
+        <p>Long-term goals tracked across all your operations. Completing these rewards bonus gold.</p>
+      </div>
+      <button class="btn small ghost" id="btn-achievements-back">◀ MAIN MENU</button>
+    </div>
+    <div class="ach-wrap">
+      <div class="ach-summary" id="ach-summary"></div>
+      <div class="ach-grid" id="ach-grid"></div>
+    </div>
+  </div>
+
+  <div class="screen" id="screen-game">
+    <div id="hud">
+      <div class="hud-top">
+        <div class="mission-panel glass hud-panel">
+          <div class="kicker" id="hud-kicker">THEATER 01</div>
+          <div class="name" id="hud-stage">NEON HARBOR</div>
+          <div class="sub" id="hud-level">MISSION 01</div>
+        </div>
+        <div class="wave-panel glass hud-panel">
+          <div class="wave-row">
+            <span>WAVE <b id="hud-wave">00</b> / <span id="hud-wave-total">00</span></span>
+            <span id="hud-enemies">0 HOSTILES</span>
+          </div>
+          <div class="wave-track"><div class="wave-fill" id="wave-fill"></div></div>
+        </div>
+        <div class="resources glass hud-panel">
+          <div class="res-item credits"><div class="k">CREDITS</div><div class="v" id="hud-credits">0</div></div>
+          <div class="res-item lives" id="lives-wrap"><div class="k">BASE</div><div class="v" id="hud-lives">20</div></div>
+          <div class="hud-controls">
+            <button class="ctrl speed" id="btn-speed" title="Game speed">1X</button>
+            <button class="ctrl" id="btn-pause" title="Pause (Esc)">II</button>
+          </div>
+        </div>
+      </div>
+      <div id="prep-countdown">00</div>
+      <div id="prep-sub">DEPLOY DEFENSES</div>
+      <div id="wave-banner">
+        <div class="wb-kicker">INCOMING</div>
+        <div class="wb-title">WAVE 01</div>
+        <div class="wb-comp"></div>
+      </div>
+      <div id="toasts"></div>
+      <div id="sel-panel" class="glass">
+        <div class="sel-head">
+          <span class="sel-name" id="sel-name">GUNNER</span>
+          <span class="sel-lvl" id="sel-lvl">LV 1</span>
+        </div>
+        <div class="sel-stats">
+          <div class="sel-stat"><div class="sk">DAMAGE</div><div class="sv"><span id="sel-dmg">0</span><span class="sv-next" id="sel-dmg-next"></span></div></div>
+          <div class="sel-stat"><div class="sk">RANGE</div><div class="sv"><span id="sel-range">0</span><span class="sv-next" id="sel-range-next"></span></div></div>
+          <div class="sel-stat"><div class="sk">FIRE RATE</div><div class="sv"><span id="sel-rate">0</span><span class="sv-next" id="sel-rate-next"></span></div></div>
+          <div class="sel-stat"><div class="sk">TARGETS</div><div class="sv"><span id="sel-air">GROUND</span></div></div>
+        </div>
+        <div class="sel-actions">
+          <button class="btn small ghost" id="btn-target-mode">TARGET: FIRST</button>
+          <button class="btn small" id="btn-upgrade">UPGRADE <span id="up-cost">—</span></button>
+          <button class="btn small danger" id="btn-sell">SELL <span id="sell-val">—</span></button>
+        </div>
+      </div>
+      <div class="hud-bottom">
+        <div class="wave-action">
+          <button id="emp-btn" class="btn small gold" disabled>EMP PULSE · READY</button>
+          <button id="wave-btn">START WAVE</button>
+        </div>
+        <div id="tower-bar" class="glass"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-settings">
+  <div class="modal-box">
+    <button class="modal-close" data-close>×</button>
+    <div class="eyebrow">SYSTEM</div>
+    <h2>SETTINGS</h2>
+    <p>Audio and visual preferences. Graphics changes apply on the next mission.</p>
+    <div style="margin-top:18px">
+      <div class="setting-row"><span>MUSIC</span><div class="toggle on" id="set-music"></div></div>
+      <div class="setting-row"><span>SOUND EFFECTS</span><div class="toggle on" id="set-sfx"></div></div>
+      <div class="setting-row"><span>BLOOM / GLOW</span><div class="toggle on" id="set-bloom"></div></div>
+      <div class="setting-row"><span>SHADOWS</span><div class="toggle on" id="set-shadows"></div></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn small ghost" id="btn-replay-tutorial">REPLAY TUTORIAL</button>
+      <button class="btn small danger" id="btn-reset-progress">RESET PROGRESS</button>
+      <button class="btn small ghost" data-close>CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-howto">
+  <div class="modal-box">
+    <button class="modal-close" data-close>×</button>
+    <div class="eyebrow">FIELD MANUAL</div>
+    <h2>HOW TO PLAY</h2>
+    <p>Enemies follow the road toward your command base. Some missions have two or three approach routes. Build towers on the glowing pads beside the routes. Air units ignore the road and fly straight to the base.</p>
+    <div class="howto-grid">
+      <div class="howto-item"><b>1 · PICK &amp; PLACE</b><span>Click a tower in the bottom bar. A ghost attaches to your cursor. Click a glowing pad to drop it.</span></div>
+      <div class="howto-item"><b>2 · UPGRADE & TARGET</b><span>Newly placed towers are selected automatically. Towers reach LV 2 on their own; LV 3 and LV 4 unlock in the Armory (tiers 1 and 3). Upgrade them, then cycle FIRST / STRONGEST / CLOSEST targeting.</span></div>
+      <div class="howto-item"><b>3 · TARGETING</b><span>Gunner and Cannon hit ground only. Missile, Laser, and Tesla hit air and ground.</span></div>
+      <div class="howto-item"><b>4 · ROUTES</b><span>Later missions have 2-3 enemy paths. Spread your towers to cover all approaches.</span></div>
+      <div class="howto-item"><b>5 · ENDLESS MODE</b><span>Clear Mission 20 of a theater to unlock Endless Survival for that map. Waves scale infinitely.</span></div>
+      <div class="howto-item"><b>EMP PULSE · E</b><span>Disrupts every active hostile for 2 seconds and weakens energy shields. Recharges over 38 seconds.</span></div>
+      <div class="howto-item"><b>SHIELDS</b><span>Walkers and Titans carry energy shields. Laser towers pierce them; EMP drains a portion of shield energy.</span></div>
+      <div class="howto-item"><b>ZOOM &amp; PAN</b><span>Mouse wheel or +/- keys to zoom. Right-drag or middle-drag to pan the map. WASD / Arrow keys also move. Press 0 to recenter.</span></div>
+      <div class="howto-item"><b>HOVER PREVIEW</b><span>Hover a built tower to see its range. Hover a tower card in the bar to see full stats. Hover UPGRADE to preview next-level stats in green.</span></div>
+      <div class="howto-item"><b>HOTKEYS</b><span>1–5 towers · Space wave · E EMP · T target mode · F speed · U upgrade · X sell</span></div>
+    </div>
+    <div class="modal-actions"><button class="btn primary" data-close>UNDERSTOOD</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-pause">
+  <div class="modal-box">
+    <div class="eyebrow">SIMULATION PAUSED</div>
+    <h2>HOLD POSITION</h2>
+    <p>The battle network is standing by.</p>
+    <div class="modal-actions">
+      <button class="btn primary" id="btn-resume">RESUME</button>
+      <button class="btn ghost" id="btn-restart">RESTART</button>
+      <button class="btn ghost" id="btn-quit">ABORT MISSION</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal-result">
+  <div class="modal-box">
+    <div class="eyebrow" id="result-kicker">MISSION COMPLETE</div>
+    <h2 id="result-title">SECTOR SECURED</h2>
+    <div class="star-row" id="result-stars">★★★</div>
+    <p id="result-desc"></p>
+    <div class="victory-stats">
+      <div><b id="res-waves">0</b><span>WAVES</span></div>
+      <div><b id="res-kills">0</b><span>KILLS</span></div>
+      <div><b id="res-credits">0</b><span>CREDITS</span></div>
+      <div class="gold-cell"><b id="res-gold">+0</b><span>GOLD</span></div>
+      <div class="xp-cell"><b id="res-exp">+0</b><span>XP</span></div>
+    </div>
+    <div class="modal-actions" id="result-actions"></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-daily-gift">
+  <div class="modal-box">
+    <button class="modal-close" data-close>×</button>
+    <div class="eyebrow">REWARD</div>
+    <h2>DAILY GIFT</h2>
+    <div id="daily-gift-content"></div>
+  </div>
+</div>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js", "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/" } }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+Object.assign(window,{THREE,EffectComposer,RenderPass,UnrealBloomPass,OutputPass});
+// The five game scripts share one global scope and must load in this order.
+const parts=['part1-core.js','part2-models.js','part3-world.js','part4-gameplay.js','part5-ui-app.js'];
+try{for(const src of parts)await new Promise((ok,fail)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=()=>fail(new Error('Could not load '+src));document.body.appendChild(s);});}
+catch(e){console.error(e);}
+</script>
+</body>
+</html>
