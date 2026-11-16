@@ -565,14 +565,22 @@ class GameWorld{
     c.addEventListener('pointerleave',this.onPointerLeave);
     c.addEventListener('contextmenu',this.onContext);
     c.addEventListener('wheel',this._onWheel,{passive:false});
-    c.style.touchAction='none';}
+    c.style.touchAction='none';
+    c.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
+    c.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
+    c.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
+  }
   unbindEvents(){const c=this.renderer.domElement;
     c.removeEventListener('pointermove',this.onPointerMove);
     c.removeEventListener('pointerdown',this.onPointerDown);
     c.removeEventListener('pointerup',this.onPointerUp);
     c.removeEventListener('pointerleave',this.onPointerLeave);
     c.removeEventListener('contextmenu',this.onContext);
-    c.removeEventListener('wheel',this._onWheel);}
+    c.removeEventListener('wheel',this._onWheel);
+    c.removeEventListener('touchstart', this.onTouchStart);
+    c.removeEventListener('touchmove', this.onTouchMove);
+    c.removeEventListener('touchend', this.onTouchEnd);
+  }
   handleWheel(e){
     if(this.paused||this.over)return;
     e.preventDefault();
@@ -657,6 +665,65 @@ class GameWorld{
     if(this.pointer.x>-1.5)this.updateHover();
   }
   handlePointerLeave(){this.pointer.set(-2,-2);this.clearHover();}
+    onTouchStart(e){
+    e.preventDefault();
+    if(e.touches.length===1){
+      this.touchState = { active: true, moved: false, startX: e.touches[0].clientX, startY: e.touches[0].clientY, lastX: e.touches[0].clientX, lastY: e.touches[0].clientY, isPinching: false };
+    } else if(e.touches.length===2){
+      if(!this.touchState) this.touchState = {};
+      this.touchState.active = false; this.touchState.isPinching = true;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      this.touchState.pinchDist = Math.hypot(dx, dy);
+      this.touchState.startZoom = this.targetZoom;
+    }
+  }
+  onTouchMove(e){
+    e.preventDefault();
+    if(!this.touchState) return;
+    if(e.touches.length===1 && this.touchState.active){
+      const dx = e.touches[0].clientX - this.touchState.startX;
+      const dy = e.touches[0].clientY - this.touchState.startY;
+      if(!this.touchState.moved && (Math.abs(dx) + Math.abs(dy) > 8)){ // 8px hərəkət edəndə pan başlayır
+        this.touchState.moved = true;
+        this.cancelGhost(); this.selectionBox.visible = false;
+        this.plots.forEach(p => p.hover.visible = false);
+      }
+      if(this.touchState.moved){
+        const canvasH = this.renderer.domElement.clientHeight || innerHeight;
+        const wpp = (2 * (this.camBaseSize / this.zoom)) / canvasH;
+        const pitchRad = Math.asin(this.camBase.y / Math.hypot(this.camBase.y, this.camBase.z));
+        const dzScale = wpp / Math.sin(pitchRad);
+        this.pan.x = clamp(this.pan.x - dx * wpp, this.panMin, this.panMax);
+        this.pan.z = clamp(this.pan.z - dy * dzScale, this.panMin, this.panMax);
+        this.touchState.startX = e.touches[0].clientX; this.touchState.startY = e.touches[0].clientY;
+      }
+    } else if(e.touches.length===2 && this.touchState.isPinching){
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      const ratio = dist / this.touchState.pinchDist;
+      this.targetZoom = clamp(this.touchState.startZoom * ratio, this.zoomMin, this.zoomMax);
+    }
+  }
+  onTouchEnd(e){
+    e.preventDefault();
+    if(e.touches.length===0){
+      if(this.touchState && this.touchState.active && !this.touchState.moved && !this.touchState.isPinching){
+        // Barmaqla sadəcə klik (tık) edildisə
+        const touch = e.changedTouches[0];
+        const r = this.renderer.domElement.getBoundingClientRect();
+        this.pointer.x = ((touch.clientX - r.left) / r.width) * 2 - 1;
+        this.pointer.y = -((touch.clientY - r.top) / r.height) * 2 + 1;
+        this.updateHover();
+        this.handlePointerDown({ button: 0, clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => {} });
+      }
+      this.touchState = null;
+    } else if(e.touches.length===1){
+      this.touchState.isPinching = false; this.touchState.active = true;
+      this.touchState.startX = e.touches[0].clientX; this.touchState.startY = e.touches[0].clientY;
+    }
+  }
   clearHover(){this.hoveredPlot=null;this.hoveredTower=null;
     this.selectionBox.visible=false;this.plots.forEach(p=>p.hover.visible=false);
     if(this.hoverRange)this.hoverRange.visible=false;

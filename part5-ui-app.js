@@ -492,7 +492,13 @@ const UI={
         <div class="tc-bar"></div>
       `;
       card.onclick=()=>{if(this.game)this.game.setBuildType(type);};
-      card.onmouseenter=(e)=>{Audio.sfx('uiHover');this.showTowerTooltip(type,e.currentTarget);};
+      card.onmouseenter=(e)=>{
+        // Yalnız kompüterdə (siçan varsa) göstər
+        if(window.matchMedia("(hover: hover)").matches) {
+          Audio.sfx('uiHover');
+          this.showTowerTooltip(type,e.currentTarget);
+        }
+      };
       card.onmouseleave=()=>this.hideTowerTooltip();
       bar.appendChild(card);});
     this.updateTowerBar();},
