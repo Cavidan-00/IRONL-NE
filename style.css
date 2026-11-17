@@ -688,12 +688,12 @@ h3{font-size:14px;letter-spacing:.18em}
   
   /* Böyük IRON LINE yazısı və mətn */
   .menu-hero { margin-bottom: 2vh; max-width: 100%; }
-  .menu-hero h1 { font-size: 42px; } /* Ölçünü kiçildirik */
+  .menu-hero h1 { font-size: 32px; margin-top:3vh} /* Ölçünü kiçildirik */
   .menu-hero .tagline { font-size: 11px; margin: 10px 0 15px; line-height: 1.4; max-width: 100%; }
   
   /* Oyunu başlat düymələri (DEPLOY və s.) */
-  .menu-actions { gap: 6px; }
-  .menu-actions .btn { padding: 5px 9px; font-size: 7px; }
+  .menu-actions { gap: 7px; }
+  .menu-actions .btn { padding: 6px 10px; font-size: 7.5px; }
   
   /* Aşağıdakı statistika paneli */
   .menu-footer { font-size: 5px; flex-direction: row; align-items: flex-end; }
