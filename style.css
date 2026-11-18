@@ -755,11 +755,6 @@ h3{font-size:14px;letter-spacing:.18em}
   .daily-gift-row .dg-right .k{font-size:9px;letter-spacing:.22em;color:var(--muted)}
   .daily-gift-row .dg-right .v{font-size:24px;font-weight:800;color:var(--gold);margin-top:4px}
 
-  .modal-box{width:min(400px,85vw);height:80vh}
-
-  .gift-countdown{padding:7px;text-align:center;background:rgba(10,20,30,.6);border-radius:10px;border:1px solid rgba(120,220,255,.15);margin:20px 0}
-  .gift-countdown .k {font-size: 7px; margin-bottom:1px}
-  .gift-countdown .t{font-size:25px; font-weight:750;}
   .gift-streak-mini{display:flex;gap:5px;justify-content:center;margin-top:10px}
   .gift-streak-mini i{width:20px;height:5px;border-radius:2px;background:rgba(120,220,255,.15)}
   .gift-streak-mini i.on{background:var(--gold);box-shadow:0 0 7px rgba(255,209,102,.6)}
@@ -792,6 +787,33 @@ h3{font-size:14px;letter-spacing:.18em}
 /* ===== TUTORIAL PƏNCƏRƏSİNİN SAĞ/SOL YERLƏŞMƏSİ ===== */
 #tutorial-message { left: 16px !important; right: auto !important; }
 #tutorial-message.tut-right { left: auto !important; right: 16px !important; }
+
+@media (max-width: 900px){
+  .modal-box { width: 85vw !important; max-width: 320px !important; padding: 15px 20px !important; height: auto !important; min-height: 0 !important; margin: auto; }
+  .modal-box h2 { font-size: 18px !important; margin-bottom: 4px !important; }
+  .modal-box p { font-size: 11px !important; }
+
+  .gift-countdown { 
+    padding: 10px !important; 
+    margin: 10px 0 !important; 
+  }
+  
+  .gift-countdown .k { 
+    font-size: 8px !important; 
+    margin-bottom: 4px !important; 
+  }
+  
+  .gift-countdown .t { 
+    font-size: 22px !important; 
+  }
+
+  /* Bağlama (X) düyməsinin yerini düzəldirik */
+  .modal-close {
+    top: 10px !important;
+    right: 12px !important;
+    font-size: 18px !important;
+  }
+}
 
 /* ==========================================================================
    MOBIL LANDSCAPE (YANA ÇEVRİLMİŞ TELEFON) - TAM OPTİMİZASİYA (PC DƏYİŞMİR)
