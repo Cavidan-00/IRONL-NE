@@ -692,7 +692,7 @@ const UI={
     grid.innerHTML='';
     const unlockedCount=Object.keys(Progress.data.achievements||{}).length;
     const s=Progress.data.stats||{};
-    summary.innerHTML='<div><div style="font-size:10px;letter-spacing:.3em;color:var(--gold);font-weight:800">ACHIEVEMENT PROGRESS</div><div class="as-num">'+unlockedCount+' <span style="font-size:18px;color:var(--muted);font-weight:600">/ '+ACHIEVEMENTS.length+'</span></div></div><div class="as-stats"><div class="as-stat"><b>'+formatNum(s.totalKills||0)+'</b><span>TOTAL KILLS</span></div><div class="as-stat"><b>'+formatNum(s.totalWavesCleared||0)+'</b><span>WAVES CLEARED</span></div><div class="as-stat"><b>'+formatNum(s.maxEndlessWave||0)+'</b><span>BEST ENDLESS</span></div><div class="as-stat"><b>'+formatNum(s.bestDailyStreak||0)+'</b><span>DAILY STREAK</span></div></div>';
+    summary.innerHTML='<div><div class="ach-pro">ACHIEVEMENT PROGRESS</div><div class="as-num">'+unlockedCount+' <span class="as-num" style="color:var(--muted);font-weight:600">/ '+ACHIEVEMENTS.length+'</span></div></div><div class="as-stats"><div class="as-stat"><b>'+formatNum(s.totalKills||0)+'</b><span>TOTAL KILLS</span></div><div class="as-stat"><b>'+formatNum(s.totalWavesCleared||0)+'</b><span>WAVES CLEARED</span></div><div class="as-stat"><b>'+formatNum(s.maxEndlessWave||0)+'</b><span>BEST ENDLESS</span></div><div class="as-stat"><b>'+formatNum(s.bestDailyStreak||0)+'</b><span>DAILY STREAK</span></div></div>';
     for(const a of ACHIEVEMENTS){
       const unlocked=!!Progress.data.achievements[a.id];
       let cur=0,tgt=a.target||1;
@@ -730,7 +730,7 @@ const UI={
     }else{
       const ms=DailyGift.timeUntilNext();
       const h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000);
-      content.innerHTML='<div class="gift-countdown"><div class="k">NEXT GIFT IN</div><div class="t">'+String(h).padStart(2,'0')+' : '+String(m).padStart(2,'0')+'</div></div><p>Current streak: <b style="color:var(--gold)">'+streak+' days</b> · Best: <b style="color:var(--gold)">'+best+' days</b></p><div class="modal-actions"><button class="btn ghost" data-close>CLOSE</button></div>';
+      content.innerHTML='<div class="gift-countdown"><div class="k">NEXT GIFT IN</div><div class="t">'+String(h).padStart(2,'0')+' : '+String(m).padStart(2,'0')+'</div></div><p  >Current streak: <b style="color:var(--gold)">'+streak+' days</b> · Best: <b style="color:var(--gold)">'+best+' days</b></p><div class="modal-actions"><button class="btn ghost" data-close>CLOSE</button></div>';
       content.querySelector('[data-close]').onclick=()=>UI.closeModal('modal-daily-gift');
     }
     UI.openModal('modal-daily-gift');
