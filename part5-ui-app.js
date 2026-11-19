@@ -901,15 +901,15 @@ const App={
       if(this.world)this.world.resize(innerWidth,innerHeight);
       UI.refreshTutorialPosition();});
     /* addEventListener('pointerdown',()=>Audio.ensure(),{once:true}); */
-      addEventListener('pointerdown',()=>{
-        Audio.ensure();
-        if (window.innerWidth < 900 && !document.fullscreenElement) {
-          const docEl = document.documentElement;
-          if (docEl.requestFullscreen) {
-            docEl.requestFullscreen().catch(err => console.log("Tam ekran xətası:", err));
-          } else if (docEl.webkitRequestFullscreen) {
-            docEl.webkitRequestFullscreen(); // Safari üçün
-          }
+    addEventListener('pointerdown',()=>{
+      Audio.ensure();
+      if (window.innerWidth < 900 && !document.fullscreenElement) {
+        const docEl = document.documentElement;
+        if (docEl.requestFullscreen) {
+          docEl.requestFullscreen().catch(err => console.log("Tam ekran xətası:", err));
+        } else if (docEl.webkitRequestFullscreen) {
+          docEl.webkitRequestFullscreen();
+        }
       }},{once:true});
     addEventListener('keydown',()=>Audio.ensure(),{once:true});
     let last=performance.now();
