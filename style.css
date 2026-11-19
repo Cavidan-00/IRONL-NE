@@ -853,3 +853,217 @@ h3{font-size:14px;letter-spacing:.18em}
   .ach-progress-txt { font-size: 5.5px !important; }
   .ach-status { font-size: 6px !important; padding-top: 2px !important; }
 }
+/* ==========================================================================
+   MOBIL ÜÇÜN XÜSUSİ MODALLAR (SETTINGS VƏ HOW TO PLAY YENİLƏNMƏSİ)
+   ========================================================================== */
+@media (max-width: 900px) {
+  
+  /* --- MODAL PƏNCƏRƏSİNİ BİR AZ ENLİ EDİRİK Kİ YER QALSIN --- */
+  .modal-box {
+    width: 95vw !important;
+    max-width: 550px !important;
+    padding: 15px 20px !important;
+  }
+
+  /* --- 1. SETTINGS MENYUSU (2 SOLDƏ, 2 SAĞDA) --- */
+  /* Yuxarıdakı yazını kiçildirik */
+  #modal-settings .modal-box p { font-size: 10px !important; margin-bottom: 5px !important; }
+  #modal-settings .modal-box h2 { font-size: 20px !important; }
+
+  /* Setting-lərin yerləşdiyi div-i Grid-ə çeviririk */
+  #modal-settings .modal-box > div[style*="margin-top:18px"] {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important; /* 2 sütun */
+    gap: 0 20px !important; /* Sütunlar arası məsafə */
+    margin-top: 10px !important;
+  }
+
+  .setting-row {
+    padding: 8px 0 !important;
+    font-size: 10px !important;
+    letter-spacing: .05em !important;
+  }
+
+  /* Toggle (Aç/bağla) düymələrini mobildə kiçildirik */
+  .toggle {
+    width: 34px !important;
+    height: 18px !important;
+  }
+  .toggle::after {
+    width: 14px !important;
+    height: 14px !important;
+  }
+  .toggle.on::after {
+    left: 18px !important;
+  }
+
+  /* --- 2. HOW TO PLAY MENYUSU (DAHA KOMPAKT) --- */
+  #modal-howto .modal-box p {
+    font-size: 10px !important;
+    line-height: 1.4 !important;
+    margin-top: 5px !important;
+  }
+
+  /* Qutuları 3 sütuna (və ya 2) bölürük ki, şaquli uzanmasın */
+  .howto-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 6px !important;
+    margin-top: 10px !important;
+  }
+
+  .howto-item {
+    padding: 6px 8px !important;
+    border-radius: 5px !important;
+  }
+
+  .howto-item b {
+    font-size: 8px !important;
+    margin-bottom: 2px !important;
+    letter-spacing: .08em !important;
+  }
+
+  .howto-item span {
+    font-size: 8px !important;
+    line-height: 1.3 !important;
+  }
+}
+/* ==========================================================================
+   MOBIL UPGRADE EKRANI - TAM KOMPAKT (3 SÜTUNLU VƏ SIX)
+   ========================================================================== */
+@media (max-width: 950px) {
+  /* 1. YUXARI BAŞLIQ (COMMAND ARMORY) VƏ İZAH */
+  .page-head {
+    padding: 8px 10px !important;
+    min-height: 45px !important;
+  }
+  .page-head .left h2 {
+    font-size: 11px !important;
+    margin: 2px 0 !important;
+  }
+  .page-head .left p {
+    display: none !important; /* Uzun izahı gizlədirik */
+  }
+  .page-head .eyebrow {
+    font-size: 7px !important;
+    margin-bottom: 0 !important;
+  }
+  .page-head .btn.small {
+    padding: 4px 8px !important;
+    font-size: 8px !important;
+    margin-top: 0 !important;
+  }
+
+  /* 2. TACTICAL RESEARCH FUND PANELİ (Sarı çərçivə) */
+  .upgrade-wrap {
+    padding: 0 10px 10px !important;
+  }
+  .upgrade-header {
+    padding: 6px 10px !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+  .upgrade-header .g-label {
+    font-size: 8px !important;
+    letter-spacing: .1em !important;
+  }
+  .upgrade-header .g-sub {
+    display: none !important; /* Altındakı uzun yazını gizlədirik */
+  }
+
+  /* Qızıl və Level hissəsi */
+  .gold-balance {
+    gap: 4px !important;
+  }
+  .gold-balance .g-num {
+    font-size: 16px !important;
+  }
+  .gold-balance .g-cap {
+    font-size: 5px !important;
+  }
+  .gold-coin {
+    width: 16px !important;
+    height: 16px !important;
+  }
+  #commander-level-box {
+    margin-right: 5px !important;
+  }
+  #commander-level-box .g-label {
+    font-size: 9px !important;
+  }
+  #commander-level-box div:last-child {
+    font-size: 7px !important;
+  }
+
+  /* 3. QÜLLƏ KARTLARI (3 SÜTUNLU, KİÇİK KVADRATLAR) */
+  .upgrade-grid {
+    grid-template-columns: repeat(3, 1fr) !important; /* Yan-yana 3 kart */
+    gap: 4px !important;
+  }
+  .upgrade-card {
+    padding: 5px !important;
+    border-radius: 5px !important;
+  }
+  
+  /* Kartın daxilindəki yazılar */
+  .uc-head {
+    gap: 3px !important;
+    margin-bottom: 2px !important;
+  }
+  .uc-icon {
+    width: 16px !important;
+    height: 16px !important;
+    flex: 0 0 16px !important;
+    border-radius: 3px !important;
+  }
+  .uc-icon svg {
+    width: 10px !important;
+    height: 10px !important;
+  }
+  .uc-name {
+    font-size: 7px !important;
+    letter-spacing: 0 !important;
+  }
+  .uc-desc, .uc-unlock {
+    display: none !important; /* Uzun təsvir və "LV @ TIER" yazılarını gizlədirik */
+  }
+
+  /* Tier (5 xətt) */
+  .uc-tier {
+    display: none !important; /* Tier yazısını gizlədirik */
+  }
+  .tier-bar {
+    margin-bottom: 2px !important;
+    gap: 1px !important;
+  }
+  .tier-seg {
+    height: 2px !important;
+  }
+
+  /* Statistikalar (DMG, RATE, RANGE) */
+  .uc-stats {
+    gap: 0 !important;
+    margin-bottom: 3px !important;
+  }
+  .uc-stat {
+    font-size: 6px !important;
+    letter-spacing: 0 !important;
+    line-height: 1.2 !important;
+  }
+  .uc-stat .arrow {
+    margin: 0 2px !important;
+  }
+
+  /* Düymə (REQ COMMANDER LV 2) */
+  .uc-btn .btn {
+    padding: 2px !important;
+    font-size: 5.5px !important;
+    letter-spacing: 0 !important;
+    min-height: 18px !important;
+    white-space: normal !important;
+    text-align: center !important;
+    line-height: 1.1 !important;
+  }
+}
