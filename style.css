@@ -941,8 +941,9 @@ h3{font-size:14px;letter-spacing:.18em}
     margin: 2px 0 !important;
   }
   .page-head .left p {
-    display: none !important; /* Uzun izahı gizlədirik */
+    display: none !important;
   }
+  
   .page-head .eyebrow {
     font-size: 7px !important;
     margin-bottom: 0 !important;
@@ -1010,20 +1011,20 @@ h3{font-size:14px;letter-spacing:.18em}
   /* Kartın daxilindəki yazılar */
   .uc-head {
     gap: 3px !important;
-    margin-bottom: 2px !important;
+    margin-top: 2px !important;
   }
   .uc-icon {
-    width: 16px !important;
-    height: 16px !important;
-    flex: 0 0 16px !important;
+    width: 19px !important;
+    height: 19px !important;
+    flex: 0 0 19px !important;
     border-radius: 3px !important;
   }
   .uc-icon svg {
-    width: 10px !important;
-    height: 10px !important;
+    width: 12px !important;
+    height: 12px !important;
   }
   .uc-name {
-    font-size: 7px !important;
+    font-size: 9px !important;
     letter-spacing: 0 !important;
   }
   .uc-desc, .uc-unlock {
@@ -1035,35 +1036,37 @@ h3{font-size:14px;letter-spacing:.18em}
     display: none !important; /* Tier yazısını gizlədirik */
   }
   .tier-bar {
-    margin-bottom: 2px !important;
-    gap: 1px !important;
+    margin-top: 5px !important;
+    margin-bottom: 7px !important;
+    gap: 3px !important;
   }
   .tier-seg {
-    height: 2px !important;
+    height: 4px !important;
   }
 
   /* Statistikalar (DMG, RATE, RANGE) */
   .uc-stats {
     gap: 0 !important;
-    margin-bottom: 3px !important;
+    margin-bottom: 10px !important;
   }
   .uc-stat {
-    font-size: 6px !important;
+    font-size: 7px !important;
     letter-spacing: 0 !important;
-    line-height: 1.2 !important;
+    line-height: 2 !important;
   }
   .uc-stat .arrow {
-    margin: 0 2px !important;
+    margin: 0 5px !important;
   }
 
   /* Düymə (REQ COMMANDER LV 2) */
   .uc-btn .btn {
-    padding: 2px !important;
-    font-size: 5.5px !important;
+    padding: 8px !important;
+    font-size: 6px !important;
     letter-spacing: 0 !important;
     min-height: 18px !important;
     white-space: normal !important;
     text-align: center !important;
     line-height: 1.1 !important;
+    width: 209px;
   }
 }
