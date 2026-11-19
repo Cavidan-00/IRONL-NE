@@ -900,7 +900,10 @@ const App={
       this.renderer.setSize(innerWidth,innerHeight);
       if(this.world)this.world.resize(innerWidth,innerHeight);
       UI.refreshTutorialPosition();});
+
     /* addEventListener('pointerdown',()=>Audio.ensure(),{once:true}); */
+    /* ÜSTDƏKİNİ YAZ BURDAN */
+    
     addEventListener('pointerdown',()=>{
       Audio.ensure();
       if (window.innerWidth < 900 && !document.fullscreenElement) {
@@ -911,7 +914,17 @@ const App={
           docEl.webkitRequestFullscreen();
         }
       }},{once:true});
+    /* BURAYA QƏDƏR SİL */
+    
     addEventListener('keydown',()=>Audio.ensure(),{once:true});
+
+    /* BURDAN */
+    // BRAUZERİN ÜNVAN SƏTRİNİ GİZLƏTMƏK ÜÇÜN (SCROLL TRICK)
+    setTimeout(() => {
+        window.scrollTo(0, 1);
+    }, 100);
+    /* BURAYA QƏDƏR SİL */
+
     let last=performance.now();
     const loop=(now)=>{requestAnimationFrame(loop);
       const dt=Math.min((now-last)/1000,.05);last=now;
