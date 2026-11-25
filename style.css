@@ -4,13 +4,18 @@
   --line:rgba(120,220,255,.18);--text:#dff6ff;--muted:#7fa0b2;
   --danger:#ff5a3c;--gold:#ffd166;--green:#5effc2;
   --font:"Segoe UI","Helvetica Neue",Arial,system-ui,sans-serif;
+  --pad-x:46px;
+  --sat:env(safe-area-inset-top,0px);--sar:env(safe-area-inset-right,0px);
+  --sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);
+  --px-l:calc(var(--pad-x) + var(--sal));--px-r:calc(var(--pad-x) + var(--sar));
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{margin:0;overflow:hidden;background:var(--bg);color:var(--text);
-  font-family:var(--font);user-select:none;-webkit-user-select:none;}
-canvas#c{touch-action:none;} 
-canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none}
+  font-family:var(--font);user-select:none;-webkit-user-select:none;
+  -webkit-text-size-adjust:100%;text-size-adjust:100%;overscroll-behavior:none}
+button,.btn,.ctrl,.tower-card,.toggle,.map-card,.level-node,.endless-banner{touch-action:manipulation}
+canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none}
 #vignette{position:fixed;inset:0;pointer-events:none;z-index:2;
   background:radial-gradient(circle at 50% 45%,transparent 35%,rgba(0,4,8,.55) 100%)}
 #damage-flash{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;
@@ -20,23 +25,9 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:non
 
 /* Tutorial & Warning Overlays */
 .hidden { opacity: 0 !important; pointer-events: none !important; }
-#tutorial-highlight {
-  position: fixed; z-index: 9998; border-radius: 8px;
-  box-shadow: 0 0 0 9999px rgba(2, 8, 14, 0.75), 0 0 20px rgba(94, 231, 255, 0.5);
-  border: 2px solid var(--accent); pointer-events: none;
-  transition: all 0.3s ease;
-}
-#tutorial-message {
-  position: fixed; z-index: 9999; background: rgba(10, 24, 36, 0.95);
-  border: 1px solid var(--accent); color: var(--text); padding: clamp(10px, 2vw, 16px) clamp(16px, 3vw, 24px);
-  border-radius: 8px; font-size: clamp(12px, 2vw, 14px); font-weight: 600;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.6); max-width: min(320px, 80vw);
-  text-align: center; pointer-events: none; transition: all 0.3s ease;
-  line-height: 1.5; transform: translate(-50%, -50%);
-}
 
 #air-warning {
-  position: absolute; top: 85px; left: 50%; transform: translateX(-50%);
+  position: fixed; top: calc(85px + var(--sat)); left: 50%; transform: translateX(-50%);
   background: rgba(255, 60, 40, 0.9); border: 1px solid #ff4a3a; color: #fff;
   padding: 8px 20px; font-size: 11px; font-weight: 800; letter-spacing: 0.2em;
   border-radius: 4px; box-shadow: 0 0 20px rgba(255, 60, 40, 0.6);
@@ -46,11 +37,6 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:non
 @keyframes airPulse { from { box-shadow: 0 0 10px rgba(255, 60, 40, 0.4); } to { box-shadow: 0 0 30px rgba(255, 60, 40, 0.9); } }
 .pulsing-glow { animation: armoryGlow 1.5s infinite alternate !important; }
 @keyframes armoryGlow { from { box-shadow: 0 0 10px rgba(255,209,102,0.4); } to { box-shadow: 0 0 30px rgba(255,209,102,1); } }
-.btn.tutorial-highlight {
-  border-color: var(--gold) !important; color: var(--gold) !important;
-  box-shadow: 0 0 15px rgba(255,209,102,0.5) !important;
-  animation: buttonPulse 1s infinite alternate;
-}
 @keyframes buttonPulse { from { box-shadow: 0 0 10px rgba(255,209,102,0.3); } to { box-shadow: 0 0 25px rgba(255,209,102,0.8); } }
 
 /* Screens Base */
@@ -60,11 +46,10 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:non
 .screen.active{opacity:1;visibility:visible;transform:none;pointer-events:auto}
 #screen-game.active{pointer-events:none;background:transparent}
 #screen-game{transform:none}
-#ui { z-index: 10; pointer-events: none; }
-.screen.active { pointer-events: auto; }
+#ui{pointer-events:none}
 
 /* Glass & UI Utils */
-.glass{background:linear-gradient(160deg,rgba(14,32,46,.82),rgba(5,12,20,.9));
+.glass{position:relative;background:linear-gradient(160deg,rgba(14,32,46,.82),rgba(5,12,20,.9));
   border:1px solid var(--line);
   box-shadow:0 10px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.04);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:10px}
@@ -113,7 +98,7 @@ h3{font-size:14px;letter-spacing:.18em}
 .boot-sub{margin-top:14px;font-size:10px;letter-spacing:.3em;color:var(--muted)}
 
 /* Main Menu */
-#screen-menu{justify-content:space-between;padding:34px 46px 26px;
+#screen-menu{justify-content:space-between;padding:calc(34px + var(--sat)) var(--px-r) calc(26px + var(--sab)) var(--px-l);
   background:linear-gradient(90deg,rgba(2,8,14,.92) 0%,rgba(2,8,14,.45) 55%,transparent 100%)}
 .menu-top{display:flex;justify-content:space-between;align-items:flex-start}
 .menu-brand{display:flex;align-items:center;gap:12px}
@@ -133,13 +118,13 @@ h3{font-size:14px;letter-spacing:.18em}
 .menu-stats .gold-stat b{color:var(--gold);text-shadow:0 0 14px rgba(255,209,102,.3)}
 
 /* Page Headers & Maps */
-.page-head{padding:30px 46px 18px;display:flex;align-items:flex-end;justify-content:space-between;
+.page-head{padding:calc(30px + var(--sat)) var(--px-r) 18px var(--px-l);display:flex;align-items:flex-end;justify-content:space-between;
   gap:20px;background:linear-gradient(180deg,rgba(2,8,14,.92),transparent)}
 .page-head .left h2{margin-top:6px}
 .page-head .left p{margin:8px 0 0;font-size:12px;color:var(--muted);max-width:520px;line-height:1.6}
 #screen-maps,#screen-levels,#screen-upgrades,#screen-endless-maps{background:linear-gradient(180deg,rgba(2,8,14,.88),rgba(2,8,14,.62));overflow-y:auto}
 .map-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;
-  padding:6px 46px 20px;max-width:1120px;width:100%;margin:0 auto}
+  padding:6px var(--px-r) 20px var(--px-l);max-width:1120px;width:100%;margin:0 auto}
 .map-card{position:relative;height:230px;border-radius:12px;overflow:hidden;cursor:pointer;
   border:1px solid var(--line);background:#081018;
   transition:transform .25s ease,box-shadow .25s ease,border-color .25s;
@@ -175,7 +160,7 @@ h3{font-size:14px;letter-spacing:.18em}
   background: linear-gradient(90deg, rgba(30, 35, 40, 0.9), rgba(10, 15, 20, 0.95));
   border: 1px solid rgba(255, 209, 102, 0.3); border-radius: 12px;
   padding: 20px 24px; margin: 0 auto 40px;
-  max-width: 1028px; width: calc(100% - 92px);
+  max-width: 1028px; width: calc(100% - 2 * var(--pad-x));
   cursor: pointer; transition: all 0.2s; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 .endless-banner:hover {
@@ -196,7 +181,7 @@ h3{font-size:14px;letter-spacing:.18em}
 .endless-score { position: absolute; top: 16px; left: 16px; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,209,102,0.3); color: var(--gold); padding: 4px 8px; border-radius: 4px; font-size: 9px; letter-spacing: 0.1em; font-weight: 700; }
 
 /* Levels */
-.level-wrap{max-width:1120px;width:100%;margin:0 auto;padding:6px 46px 50px}
+.level-wrap{max-width:1120px;width:100%;margin:0 auto;padding:6px var(--px-r) 40px var(--px-l)}
 .level-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
 .level-node{position:relative;aspect-ratio:1.35;border-radius:10px;cursor:pointer;
   border:1px solid var(--line);background:linear-gradient(160deg,rgba(12,28,40,.9),rgba(5,12,18,.95));
@@ -222,7 +207,7 @@ h3{font-size:14px;letter-spacing:.18em}
 .level-node .lbl.unlock{color:var(--gold);font-weight:800}
 
 /* Upgrades */
-.upgrade-wrap{max-width:1280px;width:100%;margin:0 auto;padding:6px 46px 50px}
+.upgrade-wrap{max-width:1280px;width:100%;margin:0 auto;padding:6px var(--px-r) 40px var(--px-l)}
 .upgrade-header{display:flex;justify-content:space-between;align-items:center;
   padding:16px 22px;margin-bottom:20px;border-radius:10px;
   background:linear-gradient(120deg,rgba(20,32,20,.9),rgba(8,16,20,.9));
@@ -289,13 +274,13 @@ h3{font-size:14px;letter-spacing:.18em}
 
 /* Achievements */
 #screen-achievements{background:linear-gradient(180deg,rgba(2,8,14,.88),rgba(2,8,14,.62));overflow-y:auto}
-.ach-wrap{max-width:1380px;width:100%;margin:0 auto;padding:6px 46px 50px}
+.ach-wrap{max-width:1380px;width:100%;margin:0 auto;padding:6px var(--px-r) 40px var(--px-l)}
 .ach-summary{display:flex;justify-content:space-between;align-items:center;padding:16px 22px;margin-bottom:20px;border-radius:10px;background:linear-gradient(120deg,rgba(20,32,20,.9),rgba(8,16,20,.9));border:1px solid rgba(255,209,102,.22);position:relative;overflow:hidden}
 .ach-summary::after{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 90% 50%,rgba(255,209,102,.12),transparent 60%)}
 .ach-summary .as-num{font-size:18px;font-weight:800;color:var(--gold);letter-spacing:.04em;text-shadow:0 0 20px rgba(255,209,102,.35);font-variant-numeric:tabular-nums}
 .ach-summary .as-stats{display:flex;gap:22px;flex-wrap:wrap}
 .ach-summary .as-stat{text-align:right}
-.ach-pro {font-size:10px;letter-spacing:.3em;color:var(--gold);font-weight:800; margin-bottom: 0.1vh;}
+.ach-pro {font-size:10px;letter-spacing:.3em;color:var(--gold);font-weight:800; margin-bottom:1px;}
 .ach-summary .as-stat b{display:block;font-size:14px;font-weight:800;color:var(--text);letter-spacing:.04em}
 .ach-summary .as-stat span{font-size:8px;letter-spacing:.22em;color:var(--muted)}
 .ach-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
@@ -318,7 +303,7 @@ h3{font-size:14px;letter-spacing:.18em}
 /* Game HUD */
 #hud{position:fixed;inset:0;z-index:20;pointer-events:none;font-family:var(--font)}
 .hud-panel{pointer-events:auto}
-.hud-top{position:absolute;top:14px;left:14px;right:14px;display:flex;gap:10px;
+.hud-top{position:absolute;top:calc(14px + var(--sat));left:calc(14px + var(--sal));right:calc(14px + var(--sar));display:flex;gap:10px;
   align-items:flex-start;justify-content:space-between}
 .mission-panel{padding:11px 16px;min-width:210px;position:relative}
 .mission-panel .kicker{font-size:8px;letter-spacing:.3em;color:var(--accent);font-weight:700}
@@ -347,7 +332,7 @@ h3{font-size:14px;letter-spacing:.18em}
 .ctrl.active{color:#021018;background:var(--accent);border-color:var(--accent)}
 .ctrl.speed{width:auto;padding:0 9px;font-size:10px;letter-spacing:.08em}
 .hud-bottom{position:absolute;left:0;right:0;bottom:0;display:flex;flex-direction:column;
-  align-items:center;padding:0 14px 14px;gap:10px}
+  align-items:center;padding:0 calc(14px + var(--sar)) calc(14px + var(--sab)) calc(14px + var(--sal));gap:10px}
 #tower-bar{display:flex;gap:8px;padding:9px;border-radius:12px;pointer-events:auto;
   max-width:920px;width:100%;justify-content:center;position:relative}
 .tower-card{position:relative;display:flex;align-items:center;gap:9px;padding:8px 11px;
@@ -385,7 +370,7 @@ h3{font-size:14px;letter-spacing:.18em}
 #wave-btn.ready{animation:waveReady 1.6s infinite}
 @keyframes waveReady{50%{box-shadow:0 0 30px rgba(94,231,255,.4),inset 0 0 16px rgba(94,231,255,.15)}}
 
-#sel-panel{position:absolute;left:14px;bottom:118px;width:268px;padding:14px 16px;
+#sel-panel{position:absolute;left:calc(14px + var(--sal));bottom:calc(118px + var(--sab));width:268px;padding:14px 16px;
   pointer-events:auto;transform:translateX(-115%);opacity:0;
   transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .28s}
 #sel-panel.show{transform:none;opacity:1}
@@ -417,7 +402,7 @@ h3{font-size:14px;letter-spacing:.18em}
 #wave-banner .wb-title{font-size:clamp(30px,4vw,52px);font-weight:800;
   letter-spacing:.08em;margin:5px 0}
 #wave-banner .wb-comp{font-size:10px;letter-spacing:.16em;color:var(--muted)}
-#toasts{position:absolute;top:92px;left:50%;transform:translateX(-50%);display:flex;
+#toasts{position:absolute;top:calc(92px + var(--sat));left:50%;transform:translateX(-50%);display:flex;
   flex-direction:column;gap:6px;align-items:center;pointer-events:none}
 .toast{padding:8px 16px;background:rgba(8,20,30,.9);border:1px solid var(--line);
   border-radius:4px;font-size:10px;letter-spacing:.12em;color:var(--text);
@@ -435,15 +420,12 @@ h3{font-size:14px;letter-spacing:.18em}
 .modal-box{width:min(560px,92vw);padding:28px 30px;border-radius:12px;position:relative;
   background:linear-gradient(160deg,rgba(12,28,40,.98),rgba(4,10,16,.99));
   border:1px solid var(--line);box-shadow:0 30px 90px rgba(0,0,0,.7);
-  transform:translateY(14px) scale(.98);transition:.28s;max-height:88vh;overflow-y:auto;
-  max-height: 85vh;
-  overflow-y: auto;
-  margin: 0 auto;
-}
+  transform:translateY(14px) scale(.98);transition:.28s;
+  max-height:85vh;max-height:85dvh;overflow-y:auto;overscroll-behavior:contain;margin:0 auto}
 .modal.open .modal-box{transform:none}
 .modal-box h2{font-size:24px;margin-bottom:6px}
 .modal-box p{font-size:12px;color:var(--muted);line-height:1.7}
-.modal-close{position:absolute;top:12px;right:14px;background:none;border:none;
+.modal-close{position:absolute;top:6px;right:8px;padding:6px 8px;background:none;border:none;
   color:var(--muted);font-size:20px;cursor:pointer;line-height:1}
 .modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
 .setting-row{display:flex;justify-content:space-between;align-items:center;
@@ -486,18 +468,18 @@ h3{font-size:14px;letter-spacing:.18em}
 .daily-gift-row .dg-right .v{font-size:24px;font-weight:800;color:var(--gold);margin-top:4px}
 .gift-countdown{padding:22px;text-align:center;background:rgba(10,20,30,.6);border-radius:10px;border:1px solid rgba(120,220,255,.15);margin:20px 0}
 .gift-countdown .k{font-size:10px;letter-spacing:.24em;color:var(--muted);margin-bottom:10px}
-.gift-countdown .t{font-size:36px;font-weight:750;color:var(--accent);letter-spacing:.05em;font-variant-numeric:tabular-nums}
+.gift-countdown .t{font-size:36px;font-weight:700;color:var(--accent);letter-spacing:.05em;font-variant-numeric:tabular-nums}
 .gift-streak-mini{display:flex;gap:6px;justify-content:center;margin-top:14px}
 .gift-streak-mini i{width:20px;height:5px;border-radius:2px;background:rgba(120,220,255,.15)}
 .gift-streak-mini i.on{background:var(--gold);box-shadow:0 0 8px rgba(255,209,102,.6)}
 
 /* Floating Notifications & Tooltips */
-.ach-notify{position:fixed;top:22px;left:50%;z-index:10000;background:linear-gradient(100deg,rgba(80,60,20,.98),rgba(40,30,10,.98));border:1px solid rgba(255,209,102,.6);color:#ffd166;padding:14px 26px;border-radius:8px;font-family:var(--font);font-size:12px;letter-spacing:.08em;font-weight:800;box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 30px rgba(255,209,102,.4);pointer-events:none;opacity:0;transform:translate(-50%,-22px);transition:opacity .35s,transform .35s;text-align:center;max-width:420px}
+.ach-notify{position:fixed;top:calc(22px + var(--sat));left:50%;z-index:10000;background:linear-gradient(100deg,rgba(80,60,20,.98),rgba(40,30,10,.98));border:1px solid rgba(255,209,102,.6);color:#ffd166;padding:14px 26px;border-radius:8px;font-family:var(--font);font-size:12px;letter-spacing:.08em;font-weight:800;box-shadow:0 10px 40px rgba(0,0,0,.6),0 0 30px rgba(255,209,102,.4);pointer-events:none;opacity:0;transform:translate(-50%,-22px);transition:opacity .35s,transform .35s;text-align:center;max-width:min(420px,calc(100vw - 24px))}
 .ach-notify.show{opacity:1;transform:translate(-50%,0)}
 .ach-notify .an-k{font-size:9px;letter-spacing:.28em;opacity:.7;margin-bottom:6px}
 .ach-notify .an-n{font-size:13px;color:#fff4c4}
 .ach-notify .an-r{font-size:10px;color:#f4d98e;margin-top:6px;font-weight:600}
-#tower-tooltip{position:fixed;z-index:100;pointer-events:none;background:linear-gradient(150deg,rgba(17,31,42,.98),rgba(4,11,18,.98));border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:220px;max-width:280px;box-shadow:0 10px 30px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05);font-family:var(--font);opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
+#tower-tooltip{position:fixed;z-index:100;pointer-events:none;background:linear-gradient(150deg,rgba(17,31,42,.98),rgba(4,11,18,.98));border:1px solid var(--line);border-radius:8px;padding:12px 14px;min-width:220px;max-width:min(280px,calc(100vw - 24px));box-shadow:0 10px 30px rgba(0,0,0,.65),inset 0 1px 0 rgba(255,255,255,.05);font-family:var(--font);opacity:0;transform:translateY(6px);transition:opacity .15s,transform .15s}
 #tower-tooltip.show{opacity:1;transform:translateY(0)}
 #tower-tooltip .tt-name{font-size:12px;font-weight:800;letter-spacing:.12em;margin-bottom:4px;color:var(--text)}
 #tower-tooltip .tt-desc{font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.4}
@@ -543,7 +525,7 @@ h3{font-size:14px;letter-spacing:.18em}
 
 /* Tutorial */
 #tutorial-highlight{position:fixed;z-index:19;border:2px solid var(--gold);border-radius:10px;background:rgba(255,209,102,.045);box-shadow:0 0 0 9999px rgba(1,6,11,.56),0 0 0 5px rgba(255,209,102,.12),0 0 28px rgba(255,209,102,.58);pointer-events:none;transition:left .22s ease,top .22s ease,width .22s ease,height .22s ease}
-#tutorial-message{position:fixed!important;z-index:49!important;top:86px!important;left:16px!important;width:min(360px,calc(100vw - 32px));max-width:none!important;padding:16px 18px 13px!important;border:1px solid rgba(255,209,102,.48)!important;border-radius:13px!important;background:linear-gradient(150deg,rgba(17,31,42,.98),rgba(4,11,18,.98))!important;box-shadow:0 18px 54px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.06)!important;text-align:left!important;transform:none!important;pointer-events:none;transition:opacity .2s ease,transform .2s ease;line-height:1.45}
+#tutorial-message{position:fixed!important;color:var(--text);font-weight:600;z-index:49!important;top:86px!important;left:16px!important;width:min(360px,calc(100vw - 32px));max-width:none!important;padding:16px 18px 13px!important;border:1px solid rgba(255,209,102,.48)!important;border-radius:13px!important;background:linear-gradient(150deg,rgba(17,31,42,.98),rgba(4,11,18,.98))!important;box-shadow:0 18px 54px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.06)!important;text-align:left!important;transform:none!important;pointer-events:none;transition:opacity .2s ease,transform .2s ease;line-height:1.45}
 #tutorial-message:not(.hidden){pointer-events:auto!important}
 #tutorial-message.tut-right { left: auto !important; right: 16px !important; }
 .tutorial-card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:9px}
@@ -572,524 +554,293 @@ h3{font-size:14px;letter-spacing:.18em}
 .armory-tutorial-copy{font-size:11px;color:var(--muted);line-height:1.6;margin:0}
 .armory-tutorial-status{margin-top:9px;color:#f4d98e;font-size:10px;font-weight:700;letter-spacing:.04em}
 
-/* Rotate Hint */
+/* ==========================================================================
+   Rotate hint (portrait phones)
+   ========================================================================== */
 #rotate-hint{display:none;position:fixed;inset:0;z-index:100;background:#02060a;align-items:center;justify-content:center;text-align:center;padding:30px}
-@media (orientation:portrait) and (max-width:900px){
-  #rotate-hint{display:flex;flex-direction:column;gap:16px}
+@media (orientation:portrait) and (max-width:900px){#rotate-hint{display:flex;flex-direction:column;gap:16px}}
+
+/* Modal scrollbar */
+.modal-box::-webkit-scrollbar{width:6px}
+.modal-box::-webkit-scrollbar-track{background:rgba(0,0,0,.3);border-radius:4px}
+.modal-box::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px}
+.modal-box::-webkit-scrollbar-thumb:hover{background:#fff}
+
+/* Toasts must not sit on top of the air-attack warning */
+body:has(#air-warning:not(.hidden)) #toasts{top:calc(128px + var(--sat))}
+
+/* Touch devices: no "stuck" hover lift */
+@media (hover:none){
+  .map-card:hover,.level-node:hover,.endless-banner:hover,.tower-card:hover{transform:none}
 }
 
 /* ==========================================================================
-   TABLET & MOBILE GENERAL (max-width: 900px)
+   DESKTOP: armory shows all 5 towers in one row
    ========================================================================== */
-@media(max-width:900px){
-  .map-grid{grid-template-columns:1fr;padding:6px 20px 20px}
-  .page-head{padding:22px 20px 14px}
-  .level-wrap,.upgrade-wrap{padding:6px 20px 40px}
-  .level-grid{grid-template-columns:repeat(5,1fr);gap:8px}
+@media (min-width:951px){
+  .upgrade-wrap{max-width:100%;padding:20px calc(40px + var(--sar)) 30px calc(40px + var(--sal))}
+  .upgrade-grid{grid-template-columns:repeat(5,1fr);gap:16px}
+  .upgrade-card{padding:16px 14px}
+}
+
+/* ==========================================================================
+   TABLET / PHONE  (width <= 950px)
+   ========================================================================== */
+@media (max-width:950px){
+  :root{--pad-x:20px}
+
+  /* menu, maps, levels */
+  #screen-menu{padding-top:calc(22px + var(--sat));padding-bottom:calc(22px + var(--sab))}
+  .menu-hero h1{font-size:52px}
+  .menu-footer{flex-direction:column;gap:12px;align-items:flex-start}
+  .menu-stats{flex-wrap:wrap;gap:18px}
+  .page-head{padding-top:calc(22px + var(--sat));padding-bottom:12px}
+  .map-grid{grid-template-columns:1fr}
+  .endless-banner{padding:16px}
+  .level-grid{gap:8px}
   .level-node .num{font-size:20px}
+
+  /* armory */
+  .upgrade-header{padding:10px 14px;margin-bottom:12px;gap:10px;flex-wrap:wrap}
+  .upgrade-header .g-label{font-size:9px;letter-spacing:.16em}
+  .upgrade-header .g-sub{display:none}
+  .gold-balance{gap:6px;margin-left:auto}
+  .gold-balance .g-num{font-size:20px}
+  .gold-balance .g-cap{font-size:7px}
+  .gold-coin{width:22px;height:22px}
+  .gold-coin::after{font-size:10px}
+  #commander-level-box{margin-right:8px}
+  #commander-level-box .g-label{font-size:10px}
+  #commander-level-box div:last-child{font-size:8px}
+  .upgrade-grid{grid-template-columns:repeat(3,1fr);gap:8px}
+  .upgrade-card{padding:10px;border-radius:8px}
+  .upgrade-card .uc-head{gap:8px;margin-bottom:8px}
+  .upgrade-card .uc-icon{width:30px;height:30px;flex:0 0 30px;border-radius:6px}
+  .upgrade-card .uc-icon svg{width:18px;height:18px}
+  .upgrade-card .uc-name{font-size:11px;letter-spacing:.06em}
+  .upgrade-card .uc-desc,.upgrade-card .uc-tier,.uc-unlock{display:none}
+  .tier-bar{margin:2px 0 8px;gap:3px}
+  .tier-seg{height:4px}
+  .uc-stats{gap:3px;margin-bottom:10px}
+  .uc-stat{font-size:9px;letter-spacing:.02em}
+  .uc-stat .k{letter-spacing:.06em}
+  .uc-stat .arrow{margin:0 4px}
+  .uc-btn .btn{padding:8px 6px;font-size:9px;letter-spacing:.06em;gap:4px;min-height:30px;white-space:normal;text-align:center;line-height:1.15}
+
+  /* achievements */
+  .ach-summary{padding:10px 14px;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+  .ach-summary .as-num{font-size:16px}
+  .ach-summary .as-stats{gap:14px;justify-content:flex-start}
+  .ach-summary .as-stat{text-align:left}
+  .ach-summary .as-stat b{font-size:11px}
+  .ach-summary .as-stat span{font-size:7px}
+  .ach-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .ach-card{padding:8px 10px;gap:3px;border-radius:8px}
+  .ach-head{gap:6px;flex-wrap:wrap}
+  .ach-name{font-size:10px;letter-spacing:.04em;line-height:1.25}
+  .ach-desc{font-size:9px;line-height:1.35}
+  .ach-reward{font-size:8px;padding:2px 5px}
+  .ach-progress{margin-top:2px;gap:2px}
+  .ach-bar{height:4px}
+  .ach-progress-txt{font-size:8px}
+  .ach-status{font-size:7px;padding-top:2px}
+
+  /* HUD */
   .hud-top{flex-wrap:wrap;gap:6px}
   .mission-panel{min-width:0;flex:1 1 150px}
   .wave-panel{order:3;flex:1 1 100%}
   .resources{flex:0 1 auto}
   .res-item{min-width:64px;padding:7px 10px}
   .res-item .v{font-size:16px}
+  .hud-bottom{align-items:stretch}
   #tower-bar{overflow-x:auto;justify-content:flex-start;padding:8px}
   .tower-card{min-width:106px;flex:0 0 106px;padding:7px 8px}
   .tower-card .tc-icon{width:24px;height:24px;flex-basis:24px}
   .tower-card .tc-name{font-size:8px}
-  .hud-bottom{align-items:stretch}
-  #sel-panel{left:8px;right:8px;width:auto;bottom:150px}
-  .menu-hero h1{font-size:52px}
-  #screen-menu{padding:22px 20px}
-  .menu-footer{flex-direction:column;gap:12px;align-items:flex-start}
-  .howto-grid{grid-template-columns:1fr}
-  .upgrade-header{flex-direction:column;align-items:flex-start;gap:16px}
-  .victory-stats{grid-template-columns:repeat(2,1fr)}
-  .menu-stats{flex-wrap:wrap;gap:18px}
-  .endless-banner{width:calc(100% - 40px); padding: 16px;}
-  #emp-btn{min-width:110px;padding:9px 10px;font-size:9px}.wave-action{flex-wrap:wrap;justify-content:center}
-  #tutorial-message{top:82px!important;left:12px!important;width:min(330px,calc(100vw - 24px));padding:13px 14px 11px!important}
+  .wave-action{flex-wrap:wrap;justify-content:center}
+  #emp-btn{min-width:110px;padding:9px 10px;font-size:9px}
+  #sel-panel{left:calc(8px + var(--sal));right:calc(8px + var(--sar));width:auto;bottom:calc(150px + var(--sab))}
+  .ab-btn{width:44px;height:42px}
+  .ab-btn .ab-name{display:none}
+
+  /* modals */
+  .modal-box{width:min(550px,95vw);padding:16px 20px}
+  .modal-box h2{font-size:20px}
+  .modal-box p{font-size:11px;line-height:1.5}
+  #modal-settings .modal-box > div[style*="margin-top:18px"]{display:grid;grid-template-columns:1fr 1fr;gap:0 20px;margin-top:10px!important}
+  .setting-row{padding:8px 0;font-size:10px;letter-spacing:.05em}
+  .howto-grid{gap:6px;margin-top:10px}
+  .howto-item{padding:6px 8px;border-radius:5px}
+  .howto-item b{font-size:8px;margin-bottom:2px;letter-spacing:.08em}
+  .howto-item span{font-size:9px;line-height:1.35}
+  .victory-stats{grid-template-columns:repeat(3,1fr)}
+  .gift-countdown{padding:10px;margin:10px 0}
+  .gift-countdown .k{font-size:8px;margin-bottom:4px}
+  .gift-countdown .t{font-size:24px}
+  .daily-gift-row{padding:10px 12px;margin:12px 0;gap:6px}
+  .daily-gift-row .dg-left .v{font-size:22px}
+  .daily-gift-row .dg-left .v small{font-size:12px}
+  .daily-gift-row .dg-right .v{font-size:16px}
+  .daily-gift-row .dg-left .k,.daily-gift-row .dg-right .k{font-size:8px}
+  .gift-streak-mini{margin-top:8px;gap:4px}
+  .gift-streak-mini i{width:12px;height:4px}
+
+  /* tutorial card */
+  #tutorial-message{top:calc(82px + var(--sat))!important;left:calc(12px + var(--sal))!important;width:min(330px,calc(100vw - 24px));padding:13px 14px 11px!important}
+  #tutorial-message.tut-right{left:auto!important;right:calc(12px + var(--sar))!important}
   .tutorial-title{font-size:12px!important}
   .tutorial-copy{font-size:11px!important}
   .tutorial-action{margin-top:9px;padding:7px 8px}
   .tutorial-card-foot{margin-top:9px}
-  .ab-btn{width:44px;height:42px}.ab-btn .ab-name{display:none}
-
-  /* Modal Fix (Covers both Gift & Result & Settings on smaller screens) */
-  .modal-box { width: 85vw !important; max-width: 320px !important; padding: 15px 20px !important; height: auto !important; min-height: 0 !important; margin: auto; }
-  .modal-box h2 { font-size: 18px !important; margin-bottom: 4px !important; }
-  .modal-box p { font-size: 11px !important; }
-  .gift-countdown { padding: 10px !important; margin: 10px 0 !important; }
-  .gift-countdown .k { font-size: 8px !important; margin-bottom: 4px !important; }
-  .gift-countdown .t { font-size: 22px !important; }
-  .modal-close { top: 10px !important; right: 12px !important; font-size: 18px !important; }
-  .daily-gift-row { padding: 10px 12px !important; margin: 12px 0 !important; gap: 5px !important; }
-  .daily-gift-row .dg-left .v { font-size: 22px !important; }
-  .daily-gift-row .dg-left .v small { font-size: 12px !important; }
-  .daily-gift-row .dg-right .v { font-size: 16px !important; }
-  .daily-gift-row .dg-left .k, .daily-gift-row .dg-right .k { font-size: 8px !important; }
-  .gift-streak-mini { margin-top: 6px !important; gap: 4px !important; }
-  .gift-streak-mini i { width: 12px !important; height: 4px !important; }
-  .modal-actions .btn.primary { padding: 8px 15px !important; font-size: 11px !important; }
-  .modal-box {
-    max-height: 90vh !important;
-    width: 90vw !important;
-  }
 }
 
-
 /* ==========================================================================
-   MOBILE LANDSCAPE (PHONE SIDEWAYS) - COMPACT UI & FIXES
+   PHONE LANDSCAPE  (short screens) - compact but readable, no !important wars
    ========================================================================== */
-@media (max-height: 600px) and (orientation: landscape) {
-  /* MENU */
-  #screen-menu { padding: 10px 15px; }
-  .menu-hero h1 { font-size: 32px; margin-top: 2vh; }
-  .menu-hero .tagline { font-size: 10px; margin: 5px 0 10px; }
-  .menu-top .btn.small { padding: 4px 8px; font-size: 8px; margin-bottom: 2px; }
-  .menu-actions { gap: 6px; }
-  .menu-actions .btn { padding: 6px 10px; font-size: 7.5px; }
-  .menu-stats b { font-size: 9px; }
-  .menu-stats span { font-size: 5px; }
-  .menu-footer { font-size: 5px; flex-direction: row; align-items: flex-end; }
-  .menu-brand .brand-mark { width: 20px; height: 20px; }
-  .menu-brand .brand-mark::after {width:7px;height:7px;}
-  .menu-brand .eyebrow { font-size: 7px !important; }
-  .glob-def{ font-size:7px;}
+@media (max-height:600px) and (orientation:landscape){
+  :root{--pad-x:14px}
+  html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden}
 
-  /* MAPS & LEVELS */
-  .page-head { padding: 10px 15px; }
-  .page-head h2 { font-size: 18px; }
-  .map-grid { gap: 10px; padding: 6px 15px 15px; }
-  .map-card { height: 130px; }
-  .map-card .info h3 { font-size: 14px; margin: 2px 0; }
-  .map-card .info p { display: none; }
-  .endless-banner { padding: 10px 15px; width: calc(100% - 30px); margin-bottom: 20px; }
-  
-  .level-wrap { padding: 0 10px; }
-  .level-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
-  .level-node { aspect-ratio: 1.3; padding: 2px; }
-  .level-node .num { font-size: 14px; }
-  .level-node .lbl { font-size: 5px; letter-spacing: .1em; }
-  .level-node .stars { font-size: 8px; }
+  /* menu */
+  #screen-menu{padding:calc(10px + var(--sat)) var(--px-r) calc(8px + var(--sab)) var(--px-l);overflow-y:auto;gap:6px}
+  .menu-brand .brand-mark{width:22px;height:22px}
+  .menu-brand .brand-mark::after{width:8px;height:8px}
+  .menu-brand .eyebrow{font-size:8px!important}
+  .glob-def{font-size:8px}
+  .menu-top .btn.small{padding:6px 10px;font-size:9px}
+  .menu-hero{margin-bottom:1vh}
+  .menu-hero h1{font-size:clamp(34px,12vh,52px)}
+  .menu-hero h1 br{display:none}
+  .menu-hero .tagline{font-size:11px;margin:6px 0 12px}
+  .menu-actions{gap:8px}
+  .menu-actions .btn{padding:9px 14px;font-size:10px}
+  .menu-footer{flex-direction:row;align-items:flex-end;font-size:8px;gap:10px}
+  .menu-stats{gap:16px;flex-wrap:nowrap}
+  .menu-stats b{font-size:13px}
 
-  /* ACHIEVEMENTS & ARMORY */
-  .btn.small{padding:6px 13px;font-size:9px}
-  .ach-wrap{max-width:100%; padding: 0 15px 20px;}
-  .ach-summary { padding: 10px; flex-direction: column; align-items: flex-start; gap: 10px; }
-  .ach-summary .as-num{font-size:12px; text-shadow:0 0 5px rgba(255,209,102,.35);}
-  .ach-pro {font-size:9px; margin-bottom: 0;}
-  .ach-grid{grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:10px;}
-  .ach-card{padding:8px 10px; gap: 1px;}
-  .ach-name{font-size:10px;}
-  .ach-desc{font-size:9px;}
-  .ach-reward{font-size:8px; padding: 2px 5px;}
-  
-  .upgrade-wrap { padding: 0 15px 20px; }
-  .upgrade-header { padding: 10px; flex-direction: row; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .upgrade-header .g-sub { display: none; }
-  .upgrade-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
-  .upgrade-card { padding: 10px; }
-  .upgrade-card .uc-head { margin-bottom: 5px; }
-  .upgrade-card .uc-icon { width: 32px; height: 32px; flex-basis: 32px; }
-  .upgrade-card .uc-icon svg { width: 20px; height: 20px; }
-  .upgrade-card .uc-name { font-size: 11px; }
-  .upgrade-card .uc-desc { display: none; }
-  .upgrade-card .uc-tier { margin-top: 0; margin-bottom: 2px; }
-  .upgrade-card .uc-stats { margin-bottom: 8px; gap: 2px; }
-  .upgrade-card .uc-btn .btn { padding: 6px; font-size: 9px; }
+  /* page headers, maps, levels */
+  .page-head{padding:calc(8px + var(--sat)) var(--px-r) 6px var(--px-l);gap:10px;align-items:center}
+  .page-head .left h2{font-size:18px;margin-top:2px;letter-spacing:.1em}
+  .page-head .left p{display:none}
+  .page-head .eyebrow{font-size:8px}
+  .btn.small{padding:7px 12px;font-size:10px}
+  .map-grid{grid-template-columns:repeat(2,1fr);gap:10px;padding-top:4px;padding-bottom:14px}
+  .map-card{height:120px}
+  .map-card .info{left:14px;right:14px;bottom:10px}
+  .map-card .info h3{font-size:14px;margin:2px 0}
+  .map-card .info p{display:none}
+  .map-card .meta{top:8px;right:8px}
+  .endless-banner{padding:10px 14px;margin-bottom:16px;gap:12px}
+  .endless-banner .eb-icon{font-size:24px}
+  .endless-banner .eb-text h3{font-size:13px}
+  .endless-banner .eb-text p{font-size:9px}
+  .level-wrap{padding-top:4px;padding-bottom:20px}
+  .level-grid{gap:6px}
+  .level-node{aspect-ratio:2}
+  .level-node .num{font-size:16px}
+  .level-node .lbl{font-size:6px;letter-spacing:.12em}
+  .level-node .stars{font-size:9px;height:11px}
+  .level-node.current::after{font-size:6px;bottom:3px}
+  .level-node .boss-tag{font-size:6px;top:4px;right:4px}
 
-  /* HUD TOP PANELS (Resources Left, Wave Center, Mission Right) */
-  .hud-top { top: 4px; left: 4px; right: 4px; gap: 4px; display: flex; }
-  .resources { order: 1; gap: 1px; }
-  .res-item { padding: 2px 5px; min-width: 45px; }
-  .res-item .v { font-size: 11px; }
-  .res-item .k { font-size: 5px; }
-  .ctrl { width: 22px; height: 22px; font-size: 8px; }
-  .wave-panel { order: 2; flex: 1; max-width: 180px; padding: 2px 6px; margin: 0 auto; }
-  .wave-row { font-size: 6px; letter-spacing: .05em; }
-  .wave-row b { font-size: 9px; }
-  .wave-track { height: 2px; margin-top: 2px; }
-  .mission-panel { order: 3; padding: 2px 6px; min-width: 110px; }
-  .mission-panel .kicker { font-size: 5px; }
-  .mission-panel .name { font-size: 8px; letter-spacing: .05em; }
-  .mission-panel .sub { font-size: 6px; }
+  /* armory + achievements */
+  .upgrade-wrap{padding-top:2px;padding-bottom:14px}
+  .upgrade-header{padding:6px 10px;margin-bottom:8px}
+  .upgrade-card{padding:8px}
+  .upgrade-card .uc-icon{width:26px;height:26px;flex-basis:26px}
+  .upgrade-card .uc-icon svg{width:16px;height:16px}
+  .upgrade-card .uc-name{font-size:10px}
+  .uc-stat{font-size:9px}
+  .uc-btn .btn{padding:6px;min-height:26px}
+  .ach-wrap{padding-top:2px;padding-bottom:14px}
+  .ach-summary{padding:8px 12px}
 
-  /* HUD BOTTOM PANELS (Tower bar & Action buttons) */
-  .hud-bottom { padding: 0 4px 4px; gap: 3px; }
-  #wave-btn { min-width: 110px; padding: 4px 8px; font-size: 8px; }
-  #emp-btn { min-width: 70px; min-height: 22px; padding: 2px 4px; font-size: 6px; }
-  #tower-bar { padding: 2px; gap: 2px; max-height: 40px; }
-  .tower-card { min-width: 65px; padding: 2px 4px; gap: 3px; }
-  .tower-card .tc-icon { width: 14px; height: 14px; flex-basis: 14px; }
-  .tower-card .tc-name { font-size: 6px; letter-spacing: 0; }
-  .tower-card .tc-cost { font-size: 7px; margin-top: 0; }
-  .tower-card .tc-key, .tower-card .tc-tier { display: none; }
+  /* HUD top: mission | wave (true centre) | resources */
+  .hud-top{display:grid;grid-template-columns:1fr minmax(0,190px) 1fr;align-items:start;gap:6px;
+    top:calc(6px + var(--sat));left:calc(6px + var(--sal));right:calc(6px + var(--sar))}
+  .mission-panel{justify-self:start;min-width:0;padding:5px 9px;border-radius:7px}
+  .mission-panel .kicker{font-size:7px;letter-spacing:.2em}
+  .mission-panel .name{font-size:10px;letter-spacing:.06em;margin-top:1px}
+  .mission-panel .sub{font-size:8px;margin-top:1px}
+  .wave-panel{order:0;padding:5px 10px;border-radius:7px}
+  .wave-row{font-size:8px;letter-spacing:.08em;gap:6px}
+  .wave-row b{font-size:10px}
+  .wave-track{height:3px;margin-top:4px}
+  .resources{justify-self:end;align-items:center;border-radius:7px}
+  .res-item{min-width:44px;padding:4px 8px}
+  .res-item .k{font-size:7px;letter-spacing:.14em}
+  .res-item .v{font-size:12px;margin-top:0}
+  .hud-controls{padding:3px 5px;gap:4px}
+  .ctrl{width:26px;height:26px;font-size:9px}
+  .ctrl.speed{width:auto;padding:0 7px}
 
-  /* TOWER INFO PANEL (Selection) */
-  #sel-panel { width: 150px; bottom: 55px; left: 4px; padding: 4px 6px; }
-  .sel-head { padding-bottom: 2px; margin-bottom: 2px; }
-  .sel-head .sel-name { font-size: 8px; }
-  .sel-head .sel-lvl { font-size: 6px; padding: 0 3px; }
-  .sel-stats { gap: 2px 4px; margin-bottom: 4px; }
-  .sel-stat .sk { font-size: 5px; }
-  .sel-stat .sv { font-size: 8px; }
-  .sel-actions { gap: 2px; }
-  .sel-actions .btn { padding: 3px 4px; font-size: 7px; }
+  /* HUD bottom: action buttons + tower bar */
+  .hud-bottom{align-items:center;gap:4px;padding:0 calc(6px + var(--sar)) calc(6px + var(--sab)) calc(6px + var(--sal))}
+  .wave-action{margin:0;gap:6px;flex-wrap:nowrap}
+  #wave-btn{min-width:120px;padding:7px 14px;font-size:10px;letter-spacing:.12em;
+    clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+  #emp-btn{min-width:96px;min-height:0;padding:7px 10px;font-size:9px;letter-spacing:.06em}
+  #tower-bar{max-width:640px;padding:4px;gap:4px;border-radius:9px;overflow:visible;justify-content:center}
+  .tower-card{flex:1 1 0;min-width:0;padding:5px 6px;gap:5px;border-radius:6px;justify-content:center}
+  .tower-card .tc-icon{width:18px;height:18px;flex:0 0 18px}
+  .tower-card .tc-info{flex:0 1 auto}
+  .tower-card .tc-name{font-size:8px;letter-spacing:.06em}
+  .tower-card .tc-cost{font-size:10px;margin-top:1px}
+  .tower-card .tc-key,.tower-card .tc-tier,.tower-card.selected::after{display:none}
 
-  /* TUTORIAL */
-  #tutorial-message { top: 45px !important; width: 200px !important; padding: 6px 8px !important; }
-  #tutorial-message.tut-right { left: auto !important; right: 10px !important; }
-  .tutorial-kicker { font-size: 6px; }
-  .tutorial-counter { font-size: 6px; padding: 1px 2px; }
-  .tutorial-title { font-size: 8px !important; margin-bottom: 2px !important; }
-  .tutorial-copy { font-size: 7px !important; line-height: 1.3 !important; }
-  .tutorial-action { margin-top: 4px; padding: 3px 4px; font-size: 6px; }
-  .tutorial-card-foot { margin-top: 4px; }
-  .tutorial-skip { font-size: 6px; padding: 2px; }
+  /* selected tower panel: stats left, buttons right */
+  #sel-panel{width:min(290px,48vw);right:auto;left:calc(6px + var(--sal));bottom:calc(84px + var(--sab));
+    padding:8px 10px;border-radius:9px;display:grid;grid-template-columns:minmax(0,1fr) 104px;column-gap:10px}
+  .sel-head{grid-column:1/-1;padding-bottom:5px;margin-bottom:6px}
+  .sel-head .sel-name{font-size:10px}
+  .sel-head .sel-lvl{font-size:8px;padding:2px 5px}
+  .sel-stats{gap:4px 8px;margin-bottom:0}
+  .sel-stat .sk{font-size:7px}
+  .sel-stat .sv{font-size:10px;white-space:nowrap}
+  .sel-stat .sv-next{font-size:9px;margin-left:3px}
+  .sel-actions{gap:4px;justify-content:center}
+  .sel-actions .btn{padding:6px;font-size:8px;letter-spacing:.06em}
 
-  /* MODALS (Daily Gift, Results, Settings) */
-  .modal-box { padding: 10px 15px; max-width: 90%; }
+  /* banners, toasts */
+  #prep-countdown{font-size:44px;top:22%}
+  #prep-sub{top:calc(22% + 34px);font-size:8px;letter-spacing:.3em}
+  #wave-banner{top:34%}
+  #wave-banner .wb-kicker,#wave-banner .wb-comp{font-size:8px}
+  #wave-banner .wb-title{font-size:24px;margin:3px 0}
+  #toasts{top:calc(50px + var(--sat))}
+  body:has(#air-warning:not(.hidden)) #toasts{top:calc(80px + var(--sat))}
+  .toast{font-size:9px;padding:5px 10px;letter-spacing:.06em}
+  #air-warning{top:calc(50px + var(--sat));font-size:9px;padding:5px 14px}
+  .ach-notify{top:calc(8px + var(--sat));padding:8px 16px;font-size:10px}
 
-  .modal-box h2 { font-size: 14px; }
-  .victory-stats { margin: 6px 0; gap: 3px; }
-  .victory-stats b { font-size: 10px; }
-  .victory-stats span { font-size: 5px; }
-  .modal-actions .btn { padding: 5px 8px; font-size: 8px; }
-    /* --- SETTINGS MENU (Mobil Landscape) --- */
-  .setting-row { padding: 8px 0 !important; font-size: 10px !important; }
-  .toggle { width: 34px !important; height: 18px !important; }
-  .toggle::after { width: 14px !important; height: 14px !important; }
-  .toggle.on::after { left: 18px !important; }
-  .modal-box .modal-actions { margin-top: 12px !important; gap: 6px !important; }
-  .modal-box .modal-actions .btn { padding: 6px 10px !important; font-size: 9px !important; }
+  /* modals */
+  .modal-box{width:min(560px,94vw);max-height:92vh;max-height:92dvh;padding:12px 18px;border-radius:10px}
+  .modal-box h2{font-size:16px;margin-bottom:2px}
+  .modal-box p{font-size:10px;line-height:1.45}
+  .modal-actions{margin-top:12px;gap:6px}
+  .modal-actions .btn{padding:8px 12px;font-size:9px}
+  .setting-row{padding:7px 0}
+  .toggle{width:36px;height:20px}
+  .toggle::after{width:14px;height:14px}
+  .toggle.on::after{left:19px}
+  .howto-item b{font-size:8px}
+  .howto-item span{font-size:8.5px}
+  .star-row{font-size:22px;margin:4px 0;letter-spacing:6px}
+  .victory-stats{grid-template-columns:repeat(5,1fr);gap:5px;margin:8px 0}
+  .victory-stats div{padding:6px 4px}
+  .victory-stats b{font-size:13px}
+  .victory-stats span{font-size:7px;letter-spacing:.1em}
+  .gift-countdown .t{font-size:22px}
 
-  /* --- HOW TO PLAY MENU (Mobil Landscape) --- */
-  .howto-grid { grid-template-columns: 1fr 1fr !important; gap: 6px !important; margin-top: 8px !important; }
-  .howto-item { padding: 6px 8px !important; border-radius: 5px !important; }
-  .howto-item b { font-size: 8px !important; margin-bottom: 2px !important; }
-  .howto-item span { font-size: 8px !important; line-height: 1.3 !important; }
-
-  /* --- ACHIEVEMENTS MENU (Mobil Landscape) --- */
-  .ach-wrap { max-width: 100% !important; padding: 0 15px 20px !important; }
-  .ach-summary { padding: 10px 15px !important; margin-bottom: 10px !important; flex-direction: row !important; }
-  .ach-summary .as-num { font-size: 14px !important; }
-  .ach-summary .as-stat b { font-size: 11px !important; }
-  .ach-summary .as-stat span { font-size: 6px !important; }
-  
-  /* Nailiyyətləri 1 sütun yerinə 2 sütun edirik ki, daha çox yer tutsun */
-  .ach-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-  .ach-card { padding: 8px 10px !important; gap: 2px !important; }
-  .ach-head { gap: 5px !important; }
-  .ach-name { font-size: 10px !important; line-height: 1.2 !important; }
-  .ach-desc { font-size: 8px !important; line-height: 1.3 !important; margin-top: 2px !important; }
-  .ach-reward { font-size: 8px !important; padding: 2px 4px !important; }
-  .ach-progress { margin-top: 3px !important; }
-  .ach-progress-txt { font-size: 7px !important; }
-  .ach-status { font-size: 7px !important; padding-top: 4px !important; }
-}
-/* ==========================================================================
-   MOBIL ÜÇÜN SON DÜZƏLİŞ (ACHIEVEMENTS VƏ UPGRADES TAM SIXILIR)
-   ========================================================================== */
-@media (max-width: 950px) {
-  /* --- 1. ARMORY / UPGRADES EKRANI --- */
-  .upgrade-wrap { padding: 5px 10px 20px !important; }
-  
-  .upgrade-header { padding: 8px 12px !important; margin-bottom: 10px !important; flex-direction: row !important; align-items: center !important; gap: 8px !important; flex-wrap: wrap !important; }
-  .upgrade-header .g-label { font-size: 8px !important; }
-  .upgrade-header .g-sub { display: none !important; } 
-  
-  .gold-balance { margin-left: auto; }
-  .gold-balance .g-num { font-size: 18px !important; }
-  .gold-balance .g-cap { font-size: 6px !important; }
-  .gold-coin { width: 20px !important; height: 20px !important; }
-  #commander-level-box { margin-right: 10px !important; }
-  #commander-level-box .g-label { font-size: 10px !important; }
-  #commander-level-box div:last-child { font-size: 8px !important; }
-
-  /* Kartları 2 sütuna salırıq və daxilini kiçildirik */
-  .upgrade-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; }
-  .upgrade-card { padding: 8px !important; border-radius: 8px !important; }
-  
-  .uc-head { gap: 6px !important; margin-bottom: 6px !important; }
-  .uc-icon { width: 24px !important; height: 24px !important; flex: 0 0 24px !important; border-radius: 5px !important; }
-  .uc-icon svg { width: 14px !important; height: 14px !important; }
-  .uc-name { font-size: 9px !important; letter-spacing: .05em !important; }
-  .uc-desc { display: none !important; } /* Təsviri tamamilə gizlədirik ki, yer qalsın */
-  
-  .uc-tier { margin-top: 0 !important; margin-bottom: 2px !important; }
-  .uc-tier-label { font-size: 6px !important; }
-  .uc-tier-count { font-size: 7px !important; }
-  .tier-bar { margin-bottom: 4px !important; gap: 2px !important; }
-  .tier-seg { height: 3px !important; }
-  
-  .uc-stats { gap: 1px !important; margin-bottom: 6px !important; }
-  .uc-stat { font-size: 7px !important; }
-  .uc-unlock { display: none !important; } /* LV @ TIER yazısını gizlədirik */
-  
-  .uc-btn .btn { padding: 5px 6px !important; font-size: 7.5px !important; gap: 2px !important; }
-
-  /* --- 2. ACHIEVEMENTS (NAİLİYYƏTLƏR) EKRANI --- */
-  .ach-wrap { padding: 5px 10px 20px !important; }
-  
-  .ach-summary { padding: 8px 10px !important; margin-bottom: 10px !important; flex-direction: row !important; flex-wrap: wrap !important; gap: 8px !important; }
-  .ach-summary .as-num { font-size: 16px !important; }
-  .ach-summary .as-stats { gap: 8px !important; justify-content: flex-start !important; }
-  .ach-summary .as-stat { text-align: left !important; }
-  .ach-summary .as-stat b { font-size: 9px !important; }
-  .ach-summary .as-stat span { font-size: 5px !important; }
-
-  /* Nailiyyət kartlarını 2 sütuna salırıq */
-  .ach-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 6px !important; }
-  .ach-card { padding: 6px 8px !important; gap: 2px !important; border-radius: 6px !important; }
-  
-  .ach-head { gap: 4px !important; flex-direction: column !important; align-items: flex-start !important; }
-  .ach-name { font-size: 8px !important; letter-spacing: 0 !important; line-height: 1.1 !important; }
-  .ach-desc { font-size: 7px !important; line-height: 1.2 !important; margin-top: 1px !important; }
-  .ach-reward { font-size: 7px !important; padding: 1px 3px !important; margin-top: 2px !important; }
-  
-  .ach-progress { margin-top: 2px !important; gap: 1px !important; }
-  .ach-bar { height: 3px !important; }
-  .ach-progress-txt { font-size: 5.5px !important; }
-  .ach-status { font-size: 6px !important; padding-top: 2px !important; }
-}
-/* ==========================================================================
-   MOBIL ÜÇÜN XÜSUSİ MODALLAR (SETTINGS VƏ HOW TO PLAY YENİLƏNMƏSİ)
-   ========================================================================== */
-@media (max-width: 900px) {
-  
-  /* --- MODAL PƏNCƏRƏSİNİ BİR AZ ENLİ EDİRİK Kİ YER QALSIN --- */
-  .modal-box {
-    width: 95vw !important;
-    max-width: 550px !important;
-    padding: 15px 20px !important;
-  }
-
-  /* --- 1. SETTINGS MENYUSU (2 SOLDƏ, 2 SAĞDA) --- */
-  /* Yuxarıdakı yazını kiçildirik */
-  #modal-settings .modal-box p { font-size: 10px !important; margin-bottom: 5px !important; }
-  #modal-settings .modal-box h2 { font-size: 20px !important; }
-
-  /* Setting-lərin yerləşdiyi div-i Grid-ə çeviririk */
-  #modal-settings .modal-box > div[style*="margin-top:18px"] {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important; /* 2 sütun */
-    gap: 0 20px !important; /* Sütunlar arası məsafə */
-    margin-top: 10px !important;
-  }
-
-  .setting-row {
-    padding: 8px 0 !important;
-    font-size: 10px !important;
-    letter-spacing: .05em !important;
-  }
-
-  /* Toggle (Aç/bağla) düymələrini mobildə kiçildirik */
-  .toggle {
-    width: 34px !important;
-    height: 18px !important;
-  }
-  .toggle::after {
-    width: 14px !important;
-    height: 14px !important;
-  }
-  .toggle.on::after {
-    left: 18px !important;
-  }
-
-  /* --- 2. HOW TO PLAY MENYUSU (DAHA KOMPAKT) --- */
-  #modal-howto .modal-box p {
-    font-size: 10px !important;
-    line-height: 1.4 !important;
-    margin-top: 5px !important;
-  }
-
-  /* Qutuları 3 sütuna (və ya 2) bölürük ki, şaquli uzanmasın */
-  .howto-grid {
-    grid-template-columns: 1fr 1fr !important;
-    gap: 6px !important;
-    margin-top: 10px !important;
-  }
-
-  .howto-item {
-    padding: 6px 8px !important;
-    border-radius: 5px !important;
-  }
-
-  .howto-item b {
-    font-size: 8px !important;
-    margin-bottom: 2px !important;
-    letter-spacing: .08em !important;
-  }
-
-  .howto-item span {
-    font-size: 8px !important;
-    line-height: 1.3 !important;
-  }
-}
-/* ==========================================================================
-   MOBIL UPGRADE EKRANI - TAM KOMPAKT (3 SÜTUNLU VƏ SIX)
-   ========================================================================== */
-@media (max-width: 950px) {
-  /* 1. YUXARI BAŞLIQ (COMMAND ARMORY) VƏ İZAH */
-  .page-head {
-    padding: 8px 10px !important;
-    min-height: 45px !important;
-  }
-  .page-head .left h2 {
-    font-size: 11px !important;
-    margin: 2px 0 !important;
-  }
-  .page-head .left p {
-    display: none !important;
-  }
-  
-  .page-head .eyebrow {
-    font-size: 7px !important;
-    margin-bottom: 0 !important;
-  }
-  .page-head .btn.small {
-    padding: 4px 8px !important;
-    font-size: 8px !important;
-    margin-top: 0 !important;
-  }
-
-  /* 2. TACTICAL RESEARCH FUND PANELİ (Sarı çərçivə) */
-  .upgrade-wrap {
-    padding: 0 10px 10px !important;
-  }
-  .upgrade-header {
-    padding: 6px 10px !important;
-    margin-bottom: 8px !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-  }
-  .upgrade-header .g-label {
-    font-size: 8px !important;
-    letter-spacing: .1em !important;
-  }
-  .upgrade-header .g-sub {
-    display: none !important; /* Altındakı uzun yazını gizlədirik */
-  }
-
-  /* Qızıl və Level hissəsi */
-  .gold-balance {
-    gap: 4px !important;
-  }
-  .gold-balance .g-num {
-    font-size: 12px !important;
-  }
-  .gold-balance .g-cap {
-    font-size: 5px !important;
-  }
-  .gold-coin {
-    width: 13px !important;
-    height: 13px !important;
-  }
-  .gold-coin{position:relative}
-  .gold-coin::after{font-size:8px}
-  #commander-level-box {
-    margin-right: 5px !important;
-  }
-  #commander-level-box .g-label {
-    font-size: 9px !important;
-  }
-  #commander-level-box div:last-child {
-    font-size: 7px !important;
-  }
-
-  /* 3. QÜLLƏ KARTLARI (3 SÜTUNLU, KİÇİK KVADRATLAR) */
-  .upgrade-grid {
-    grid-template-columns: repeat(3, 1fr) !important; /* Yan-yana 3 kart */
-    gap: 5px !important;
-  }
-  .upgrade-card {
-    padding: 5px !important;
-    border-radius: 5px !important;
-  }
-  
-  /* Kartın daxilindəki yazılar */
-  .uc-head {
-    gap: 3px !important;
-    margin-top: 2px !important;
-  }
-  .uc-icon {
-    width: 19px !important;
-    height: 19px !important;
-    flex: 0 0 19px !important;
-    border-radius: 3px !important;
-  }
-  .uc-icon svg {
-    width: 12px !important;
-    height: 12px !important;
-  }
-  .uc-name {
-    font-size: 9px !important;
-    letter-spacing: 0 !important;
-  }
-  .uc-desc, .uc-unlock {
-    display: none !important; /* Uzun təsvir və "LV @ TIER" yazılarını gizlədirik */
-  }
-
-  /* Tier (5 xətt) */
-  .uc-tier {
-    display: none !important; /* Tier yazısını gizlədirik */
-  }
-  .tier-bar {
-    margin-top: 5px !important;
-    margin-bottom: 7px !important;
-    gap: 3px !important;
-  }
-  .tier-seg {
-    height: 4px !important;
-  }
-
-  /* Statistikalar (DMG, RATE, RANGE) */
-  .uc-stats {
-    gap: 0 !important;
-    margin-bottom: 10px !important;
-  }
-  .uc-stat {
-    font-size: 7px !important;
-    letter-spacing: 0 !important;
-    line-height: 2 !important;
-  }
-  .uc-stat .arrow {
-    margin: 0 5px !important;
-  }
-
-  /* Düymə (REQ COMMANDER LV 2) */
-  .uc-btn .btn {
-    padding: 8px !important;
-    font-size: 6px !important;
-    letter-spacing: 0 !important;
-    min-height: 18px !important;
-    white-space: normal !important;
-    text-align: center !important;
-    line-height: 1.1 !important;
-    width: 209px;
-  }
-}
-/* ==========================================================================
-   PC VERSİYASI ÜÇÜN ARMORY EKRANININ TAM EKRANA YAYILMASI (5 SÜTUN)
-   ========================================================================== */
-@media (min-width: 951px) {
-  /* Konteynerin maksimum enini sildik, tam enə yayılsın */
-  .upgrade-wrap {
-    max-width: 100% !important;
-    padding: 20px 40px 50px !important;
-  }
-
-  /* 5 kartın hamısını bir sıraya (5 sütuna) məcburi düzürük */
-  .upgrade-grid {
-    grid-template-columns: repeat(5, 1fr) !important;
-    gap: 16px !important;
-  }
-
-  /* Kartların içindəki yazılar çox sıxılmasın deyə yan boşluqları bir az artırırıq */
-  .upgrade-card {
-    padding: 16px 14px !important;
-  }
+  /* tutorial card */
+  #tutorial-message{top:calc(48px + var(--sat))!important;left:calc(8px + var(--sal))!important;width:min(250px,44vw);padding:8px 10px!important;border-radius:9px!important}
+  #tutorial-message.tut-right{left:auto!important;right:calc(8px + var(--sar))!important}
+  .tutorial-card-head{margin-bottom:5px}
+  .tutorial-kicker,.tutorial-counter{font-size:7px}
+  .tutorial-counter{padding:2px 4px}
+  .tutorial-title{font-size:10px!important;margin-bottom:3px!important}
+  .tutorial-copy{font-size:9px!important;line-height:1.4!important}
+  .tutorial-action{margin-top:6px;padding:4px 6px;font-size:8px}
+  .tutorial-card-foot{margin-top:6px}
+  .tutorial-skip{font-size:8px}
 }

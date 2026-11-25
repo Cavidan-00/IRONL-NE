@@ -427,7 +427,16 @@ class GameWorld{
     this.camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
     this.camBase=V3(0,40,18);this.camera.position.copy(this.camBase);
     this.camera.lookAt(0,0,0);this.cameraShake=0;
-    this.zoom=1;this.targetZoom=1;this.zoomMin=0.5;this.zoomMax=2;
+    // YENİ: Mobil cihazlarda zoom-u yaxınlaşdır, PC-də olduğu kimi saxla
+    this.zoom=1;this.targetZoom=1;
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
+    if (isMobile) {
+        this.zoomMin = 1.0;  // Uzaqlaşmanı məhdudlaşdırır (1.0-dan aşağı düşmür)
+        this.zoomMax = 4.5;  // Daha çox yaxınlaşmağa icazə verir (əvvəl 3.0 idi)
+    } else {
+        this.zoomMin = 0.75; // PC üçün olduğu kimi
+        this.zoomMax = 3.0;
+    }
     this.camAspect=innerWidth/innerHeight;
     this.camBaseSize=Math.max(26,24/this.camAspect);
     // v2.3.1 — map panning
