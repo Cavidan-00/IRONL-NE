@@ -427,14 +427,16 @@ class GameWorld{
     this.camera=new THREE.OrthographicCamera(-1,1,1,-1,.1,200);
     this.camBase=V3(0,40,18);this.camera.position.copy(this.camBase);
     this.camera.lookAt(0,0,0);this.cameraShake=0;
-    // YENİ: Mobil cihazlarda zoom-u yaxınlaşdır, PC-də olduğu kimi saxla
-    this.zoom=1;this.targetZoom=1;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
     if (isMobile) {
-        this.zoomMin = 1.0;  // Uzaqlaşmanı məhdudlaşdırır (1.0-dan aşağı düşmür)
-        this.zoomMax = 4.5;  // Daha çox yaxınlaşmağa icazə verir (əvvəl 3.0 idi)
+        this.zoom = 1.18;
+        this.targetZoom = 1.18;
+        this.zoomMin = 0.95;
+        this.zoomMax = 4.2;
     } else {
-        this.zoomMin = 0.75; // PC üçün olduğu kimi
+        this.zoom = 1;
+        this.targetZoom = 1;
+        this.zoomMin = 0.75;
         this.zoomMax = 3.0;
     }
     this.camAspect=innerWidth/innerHeight;
@@ -684,7 +686,7 @@ class GameWorld{
       this.touchState.active = false; this.touchState.isPinching = true;
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      this.touchState.pinchDist = Math.hypot(dx, dy);
+      this.touchState.pinchDist = Math.max(10, Math.hypot(dx, dy));
       this.touchState.startZoom = this.targetZoom;
     }
   }
@@ -692,9 +694,10 @@ class GameWorld{
     e.preventDefault();
     if(!this.touchState) return;
     if(e.touches.length===1 && this.touchState.active){
-      const dx = e.touches[0].clientX - this.touchState.startX;
-      const dy = e.touches[0].clientY - this.touchState.startY;
-      if(!this.touchState.moved && (Math.abs(dx) + Math.abs(dy) > 8)){ // 8px hərəkət edəndə pan başlayır
+      const stepDx = e.touches[0].clientX - this.touchState.lastX;
+      const stepDy = e.touches[0].clientY - this.touchState.lastY;
+      const totalMove = Math.hypot(e.touches[0].clientX - this.touchState.startX, e.touches[0].clientY - this.touchState.startY);
+      if(!this.touchState.moved && totalMove > 14){
         this.touchState.moved = true;
         this.cancelGhost(); this.selectionBox.visible = false;
         this.plots.forEach(p => p.hover.visible = false);
@@ -704,14 +707,16 @@ class GameWorld{
         const wpp = (2 * (this.camBaseSize / this.zoom)) / canvasH;
         const pitchRad = Math.asin(this.camBase.y / Math.hypot(this.camBase.y, this.camBase.z));
         const dzScale = wpp / Math.sin(pitchRad);
-        this.pan.x = clamp(this.pan.x - dx * wpp, this.panMin, this.panMax);
-        this.pan.z = clamp(this.pan.z - dy * dzScale, this.panMin, this.panMax);
-        this.touchState.startX = e.touches[0].clientX; this.touchState.startY = e.touches[0].clientY;
+        const dragFactor = 0.85;
+        this.pan.x = clamp(this.pan.x - stepDx * wpp * dragFactor, this.panMin, this.panMax);
+        this.pan.z = clamp(this.pan.z - stepDy * dzScale * dragFactor, this.panMin, this.panMax);
       }
+      this.touchState.lastX = e.touches[0].clientX;
+      this.touchState.lastY = e.touches[0].clientY;
     } else if(e.touches.length===2 && this.touchState.isPinching){
       const dx = e.touches[0].clientX - e.touches[1].clientX;
       const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.hypot(dx, dy);
+      const dist = Math.max(10, Math.hypot(dx, dy));
       const ratio = dist / this.touchState.pinchDist;
       this.targetZoom = clamp(this.touchState.startZoom * ratio, this.zoomMin, this.zoomMax);
     }
