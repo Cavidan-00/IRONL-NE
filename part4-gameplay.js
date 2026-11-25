@@ -3,10 +3,10 @@
 class Enemy{
   constructor(game,type,path,waveIndex){this.game=game;this.type=type;
     const def=ENEMY_TYPES[type];this.def=def;
-    const difficultyScale=1.35*Math.min(1,.9+game.G*.04)*(1+(game.G-1)*.011)*game.hpMul*(1+Math.max(0,waveIndex)*BALANCE.hpPerWave);
+    const difficultyScale=game.hpMul*(1+(game.G-1)*.0045)*(1+Math.max(0,waveIndex)*BALANCE.hpPerWave);
     this.maxHp=Math.round(def.hp*difficultyScale*ENEMY_STRENGTH_MULTIPLIER);this.hp=this.maxHp;
     this.shieldMax=Math.round((def.shield||0)*difficultyScale*1.08*ENEMY_STRENGTH_MULTIPLIER);this.shield=this.shieldMax;this.shieldTimer=0;
-    const speedScale=1.04+game.stageIndex*.01+Math.min(.12,Math.max(0,game.level-1)*.006+Math.max(0,waveIndex)*.003);
+    const speedScale=1.0+game.stageIndex*.008+Math.min(.10,Math.max(0,game.level-1)*.0035+Math.max(0,waveIndex)*.0015);
     this.speed=def.speed*(game.mapId==='arctic'&&!def.air?.88:1)*speedScale*ENEMY_STRENGTH_MULTIPLIER;
     this.leakDamage=(def.damage||0)*ENEMY_STRENGTH_MULTIPLIER;
     this.reward=Math.ceil(def.reward*(.88+game.stageIndex*.018+game.G*.003)*game.profile.reward*BALANCE.kill);this.air=def.air;
@@ -420,7 +420,10 @@ class GameWorld{
     this.mapId=this.map.id;this.renderer=renderer;
     this.isEndless=level===ENDLESS_LEVEL;
     this.G=this.isEndless?25+stageIndex*5:gIndex(stageIndex,level);this.profile=STAGE_PROFILE[stageIndex];
-    this.kind=this.isEndless?'mixed':levelKind(level);this.hpMul=this.profile.hp*(this.kind==='swarm'?.8:1);
+    const campaignProgress=this.isEndless?1:clamp((this.G-1)/79,0,1);
+    this.kind=this.isEndless?'mixed':levelKind(level);
+    const kindHP=this.kind==='swarm'?.88:this.kind==='heavy'?1.08:this.kind==='boss'?1.05:1;
+    this.hpMul=this.profile.hp*(.90+campaignProgress*.48)*kindHP;
     this.towerCap=!this.isEndless&&this.profile.cap?this.profile.cap+Math.floor(level/4):0;
     this.activeRoutes=getActiveRoutes(stageIndex,level).map(i=>this.map.routes[i]);
     this.scene=new THREE.Scene();
@@ -1052,7 +1055,7 @@ class GameWorld{
     const rewards = Progress.complete(this.stageIndex+1,this.level,stars); // Obyekt kimi tuturuq
     if(this.lives===20)Progress.bumpStat('flawlessWins');
     Progress.save();
-    UI.showResult(true,stars,this,rewards.gold,rewards.expEarned); // EXP-ni də ötürürük
+    UI.showResult(true,stars,this,rewards.gold);
     gameplayStop();happytime();}
   defeat(){
     if(this.over)return;this.over=true;this.phase='done';Audio.sfx('defeat');
@@ -1179,8 +1182,9 @@ function generateWaves(stage,level,map,routeCount){
   const pool=Object.keys(ENEMY_TYPES).filter(t=>G>=ENEMY_UNLOCK[t]);
   let _pool=pool.filter(t=>!ENEMY_TYPES[t].air || G>=TOWER_UNLOCKS.missile);
   const cheap=pool.filter(t=>ENEMY_TYPES[t].cost<=2);
-  const n=8+Math.round(level*.65)+(kind==='boss'?2:0);
-  const base=(BALANCE.base[0]+G*BALANCE.base[1])*P.count*(G===1?.8:1)*(kind==='swarm'?(G<5?1.3:1.6):1);
+  const n=8+Math.round(level*.55)+(kind==='boss'?1:0);
+  const missionCount=kind==='swarm'?(G<5?1.08:1.22):kind==='heavy'?1.04:kind==='boss'?1.08:1;
+  const base=(BALANCE.base[0]+G*BALANCE.base[1])*P.count*missionCount*(G<=3?.88:1);
   const bossType=['apc','tank','robot','heavy'].filter(t=>pool.includes(t)).pop();
   const waves=[];
   for(let w=0;w<n;w++){
@@ -1190,9 +1194,9 @@ function generateWaves(stage,level,map,routeCount){
     if(kind==='heavy'&&G>=7&&!swarmWave){const f=cand.filter(t=>ENEMY_TYPES[t].cost>=3);if(f.length)cand=f;}
     if(rng()<.2&&w>1&&!swarmWave){const air=cand.filter(t=>ENEMY_TYPES[t].air);if(air.length)cand=air;}
     if(!cand.length)cand=['infantry'];
-    let rem=base*(1+w*BALANCE.countPerWave)*(w%4===3?1.2:1)*((last&&kind==='boss')||mini?1.5:1)*(swarmWave?1.35:1);
+    let rem=base*(1+w*BALANCE.countPerWave)*(w%4===3?1.12:1)*((last&&kind==='boss')||mini?1.32:1)*(swarmWave?1.18:1);
     const groups=[];let guard=0,total=0;
-    while(rem>.6&&guard++<14&&total<150){
+    while(rem>.6&&guard++<14&&total<125){
       const type=weightedPick(cand,rng),cost=ENEMY_TYPES[type].cost;
       if(cost>rem&&groups.length)break;
       let count=Math.max(1,Math.floor(rem*(.25+rng()*.3)/cost));

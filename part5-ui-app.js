@@ -8,8 +8,11 @@ const ICONS={
   tesla:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M13 2L4 14h6l-2 8 9-12h-6z"/></svg>'
 };
 const UI={
-  game:null,currentStage:0,
-  init(){this.buildTowerBar();this.bind();this.refreshMenuStats();},
+  game:null,currentStage:0,towerBarCollapsed:false,
+  init(){
+    try{this.towerBarCollapsed=localStorage.getItem('ironline_towerbar_collapsed_v1')==='1';}catch(e){}
+    this.buildTowerBar();this.bind();this.refreshMenuStats();this.applyTowerBarState();
+  },
   bind(){
     $('#btn-deploy').onclick=()=>{Audio.ensure();Audio.sfx('ui');this.buildMaps();this.show('screen-maps');};
     $('#btn-upgrades').onclick=()=>{Audio.ensure();Audio.sfx('ui');this.buildUpgrades();this.show('screen-upgrades');};
@@ -34,6 +37,8 @@ const UI={
     $('#btn-settings').onclick=()=>{this.syncSettingsUI();this.openModal('modal-settings');Audio.sfx('ui');};
     $('#btn-howto').onclick=()=>{this.openModal('modal-howto');Audio.sfx('ui');};
     $('#btn-pause').onclick=()=>this.pause(true);
+    const towerBarToggle=$('#btn-tower-bar-toggle');
+    if(towerBarToggle)towerBarToggle.onclick=()=>this.setTowerBarCollapsed(!this.towerBarCollapsed);
     $('#btn-resume').onclick=()=>this.pause(false);
     $('#btn-restart').onclick=()=>{this.closeModal('modal-pause');this.startLevel(this.game.stageIndex,this.game.level);};
     $('#btn-quit').onclick=()=>{this.closeModal('modal-pause');this.quitToMaps();};
@@ -126,7 +131,7 @@ const UI={
     if(k===' '){e.preventDefault();if(this.game.phase==='prep')$('#wave-btn').click();}
     if(k>='1'&&k<='5'){const t=TOWER_ORDER[parseInt(k)-1];if(t)this.game.setBuildType(t);}
     if(k==='u'&&this.game.selectedTower){const t=this.game.selectedTower;
-      if(t.upgradeCost()===null&&t.level<4)this.toast('LEVEL '+(t.level+1)+' UNLOCKS IN THE ARMORY // '+t.def.name+' TIER '+(t.level===2?1:3),'gold',3000);
+      if(t.upgradeCost()===null&&t.level<4){const unlockTier=t.level===2?2:4;this.toast('LEVEL '+(t.level+1)+' UNLOCKS IN THE ARMORY // '+t.def.name+' TIER '+unlockTier,'gold',3000);}
       else $('#btn-upgrade').click();}
     if(k==='x'&&this.game.selectedTower)$('#btn-sell').click();
     if(k==='f')$('#btn-speed').click();
@@ -143,7 +148,8 @@ const UI={
     else if(e.key==='0'){this.game.targetZoom=1;this.game.pan.x=0;this.game.pan.z=0;}
     const panMap={arrowleft:'left',arrowright:'right',arrowup:'up',arrowdown:'down',a:'left',d:'right',w:'up',s:'down'};
     if(panMap[k]){e.preventDefault();this.game._panKeys[panMap[k]]=true;}
-    if(k==='p')this.pause(true);},
+    if(k==='p')this.pause(true);
+    if(k==='b')this.setTowerBarCollapsed(!this.towerBarCollapsed);},
   handleKeyUp(e){
     if(!this.game)return;
     const k=e.key.toLowerCase();
@@ -167,7 +173,7 @@ const UI={
     const gw=new GameWorld(stage,level,App.renderer);
     App.world=gw;this.game=gw;
     this.show('screen-game');$('#screen-game').classList.add('active');
-    gw.start();this.buildTowerBar();UI.updateEMP(gw);this.hideTowerTooltip();
+    gw.start();this.buildTowerBar();this.applyTowerBarState();UI.updateEMP(gw);this.hideTowerTooltip();
     $('#btn-speed').textContent='1X';$('#btn-speed').classList.remove('active');
     const m=MAPS[stage];
     document.documentElement.style.setProperty('--accent',m.accent);
@@ -385,65 +391,47 @@ const UI={
     el.classList.add('pulse');setTimeout(()=>el.classList.remove('pulse'),250);},
   renderUpgradeCards(){
     const grid=$('#upgrade-grid');if(!grid)return;
-    grid.innerHTML='';const goldEl=$('#gold-amount');
-    const header = document.querySelector('.upgrade-header');
-    let levelBox = document.getElementById('commander-level-box');
-    if(!levelBox && header) {
-      levelBox = document.createElement('div');
-      levelBox.id = 'commander-level-box';
-      levelBox.style = "margin-right: 20px; text-align: right;";
-      header.appendChild(levelBox);
-    }
-    if(levelBox) {
-      const xpRequirements = [0, 50, 100, 175, 300, 450, 620, 820, 1100, 1500, 1950, 2500, 3300, 4000, 5000]; 
-      const getXpNeeded = (lvl) => xpRequirements[lvl] || (5000 + ((lvl - 14) * 500));
-      const xpNeeded = getXpNeeded(Progress.data.playerLevel);
-      
-      levelBox.innerHTML = `
-        <div class="g-label" style="color:var(--accent)">COMMANDER LVL ${Progress.data.playerLevel}</div>
-        <div style="font-size:10px; color:#aaa; margin-top:2px">XP: ${Progress.data.playerExp} / ${xpNeeded}</div>
-      `;
-    }
+    grid.innerHTML='';
+    const goldEl=$('#gold-amount');
     if(goldEl)goldEl.textContent=Progress.data.gold;
-    
+
     if(!Progress.data.tutorialArmoryDone){
       const wrap=document.querySelector('.upgrade-wrap');
       let banner=document.getElementById('armory-tutorial');
-      if(!banner){
-        banner=document.createElement('section');
-        banner.id='armory-tutorial';
-        banner.className='armory-tutorial-card';
+      if(!banner&&wrap){
+        banner=document.createElement('section');banner.id='armory-tutorial';banner.className='armory-tutorial-card';
         wrap.insertBefore(banner,wrap.firstChild);
       }
-      const affordable=TOWER_ORDER.some(type=>Progress.canUpgrade(type));
-      banner.innerHTML=`
-        <div class="armory-tutorial-icon">◆</div>
-        <div>
-          <div class="armory-tutorial-kicker">COMMAND TRAINING // RESEARCH</div>
-          <div class="armory-tutorial-title">TURN GOLD INTO PERMANENT FIREPOWER</div>
-          <p class="armory-tutorial-copy">Choose a defense below and purchase its next tier. The bonus applies to that tower type in every mission, not just the current battle.</p>
-          <div class="armory-tutorial-status">${affordable?'YOUR BALANCE IS READY — SELECT ANY AVAILABLE UPGRADE BELOW.':'COMPLETE A MISSION TO EARN GOLD, THEN RETURN HERE TO INVEST IT.'}</div>
-        </div>`;
+      if(banner){
+        const affordable=TOWER_ORDER.some(type=>Progress.canUpgrade(type));
+        banner.innerHTML=`
+          <div class="armory-tutorial-icon">◆</div>
+          <div>
+            <div class="armory-tutorial-kicker">COMMAND TRAINING // RESEARCH</div>
+            <div class="armory-tutorial-title">TURN GOLD INTO PERMANENT FIREPOWER</div>
+            <p class="armory-tutorial-copy">Spend campaign gold on permanent tower bonuses. New tower levels unlock at Armory Tier 2 and Tier 4.</p>
+            <div class="armory-tutorial-status">${affordable?'A RESEARCH PURCHASE IS AVAILABLE.':'CLEAR THE REQUIRED CAMPAIGN MISSIONS TO OPEN THE NEXT TIER.'}</div>
+          </div>`;
+      }
     } else {
-      const banner=document.getElementById('armory-tutorial');
-      if(banner)banner.remove();
+      const banner=document.getElementById('armory-tutorial');if(banner)banner.remove();
     }
-    
     for(const type of TOWER_ORDER)grid.appendChild(this.makeUpgradeCard(type));
   },
   makeUpgradeCard(type){
-    const def=TOWER_TYPES[type];const tier=Progress.data.upgrades[type]||0;
-    const maxed=tier>=UPGRADE_TIERS;const cost=maxed?null:upgradeCostFor(type,tier);
+    const def=TOWER_TYPES[type];
+    const tier=Progress.data.upgrades[type]||0;
+    const maxed=tier>=UPGRADE_TIERS;
+    const cost=maxed?null:upgradeCostFor(type,tier);
     const open=towerUnlockedInCampaign(type);
-
-    const reqLevels = [2, 4, 6, 8, 10]; 
-    const requiredLevel = reqLevels[tier];
-    const hasLevel = Progress.data.playerLevel >= requiredLevel;
-
-    const canAfford=open&&hasLevel&&!maxed&&Progress.data.gold>=cost;
+    const cleared=Progress.campaignProgressIndex();
+    const unlockMission=TOWER_UNLOCKS[type];
+    const nextMission=maxed?null:Progress.armoryRequirement(type,tier);
+    const hasMission=!maxed&&cleared>=nextMission;
+    const canAfford=open&&hasMission&&!maxed&&Progress.data.gold>=cost;
     const cur=getUpgradeMultipliers(type);
     const nextTier=Math.min(tier+1,UPGRADE_TIERS);
-    const next={damage:1+nextTier*0.12,range:1+nextTier*0.04,rate:1+nextTier*0.05};
+    const next={damage:1+nextTier*.08,range:1+nextTier*.03,rate:1+nextTier*.04};
     const lines=[];
     if(type==='laser'){
       lines.push(['DPS',(def.dps*cur.damage).toFixed(1),maxed?null:(def.dps*next.damage).toFixed(1)]);
@@ -451,42 +439,70 @@ const UI={
     }else{
       lines.push(['DMG',(def.damage*cur.damage).toFixed(1),maxed?null:(def.damage*next.damage).toFixed(1)]);
       lines.push(['RATE',(def.rate*cur.rate).toFixed(2)+'/s',maxed?null:(def.rate*next.rate).toFixed(2)+'/s']);
-      lines.push(['RANGE',(def.range*cur.range).toFixed(1),maxed?null:(def.range*next.range).toFixed(1)]);}
+      lines.push(['RANGE',(def.range*cur.range).toFixed(1),maxed?null:(def.range*next.range).toFixed(1)]);
+    }
     const card=document.createElement('div');
     card.className='upgrade-card'+(maxed?' maxed':'')+(open?'':' locked');
-    const ul=[[3,1],[4,3]].map(([lv,tr])=>`<span class="${tier>=tr?'on':''}">LV ${lv} @ TIER ${tr}</span>`).join('');
-    card.style.setProperty('--tc',def.color);
-    card.style.setProperty('--tc-a',def.color+'33');
+    card.style.setProperty('--tc',def.color);card.style.setProperty('--tc-a',def.color+'33');
+    const levelMilestones=`<span class="${tier>=2?'on':''}">LV 3 · TIER 2</span><span class="${tier>=4?'on':''}">LV 4 · TIER 4</span>`;
     const tierSegs=Array.from({length:UPGRADE_TIERS},(_,i)=>`<div class="tier-seg ${i<tier?'on':''}"></div>`).join('');
     const statHTML=lines.map(([k,curV,nextV])=>{
       if(maxed||nextV===null)return `<div class="uc-stat maxed"><span class="k">${k}</span><span class="v">${curV}</span></div>`;
-      return `<div class="uc-stat"><span class="k">${k}</span><span><span class="v">${curV}</span><span class="arrow">→</span><span class="v next">${nextV}</span></span></div>`;}).join('');
+      return `<div class="uc-stat"><span class="k">${k}</span><span><span class="v">${curV}</span><span class="arrow">→</span><span class="v next">${nextV}</span></span></div>`;
+    }).join('');
+    const unlockText=open?'BUILDABLE FROM '+campaignMissionLabel(unlockMission):'BUILDABLE FROM '+campaignMissionLabel(unlockMission);
     let btnHTML;
-    if(!open)btnHTML=`<button class="btn" disabled>🔒 UNLOCKS AT MISSION ${TOWER_UNLOCKS[type]}</button>`;
-    else if(!hasLevel)btnHTML=`<button class="btn" disabled>🔒 REQ. COMMANDER LV ${requiredLevel}</button>`;
-    else if(maxed)btnHTML=`<button class="btn maxed">MAXED</button>`;
-    else btnHTML=`<button class="btn ${canAfford?'gold':''}" ${canAfford?'':'disabled'}><span class="price">${cost}</span> UPGRADE</button>`;
+    if(!open)btnHTML=`<button class="btn" disabled>🔒 AVAILABLE AT ${campaignMissionLabel(unlockMission)}</button>`;
+    else if(maxed)btnHTML=`<button class="btn maxed" disabled>MAXED · TIER ${UPGRADE_TIERS}</button>`;
+    else if(!hasMission)btnHTML=`<button class="btn" disabled>🔒 CLEAR ${campaignMissionLabel(nextMission)}</button>`;
+    else btnHTML=`<button class="btn ${canAfford?'gold':''}" ${canAfford?'':'disabled'}><span class="price">${cost}</span> GOLD · UPGRADE</button>`;
+    const statusText=!open
+      ?'TOWER LOCKED UNTIL '+campaignMissionLabel(unlockMission)
+      :maxed?'ALL ARMORY TIERS COMPLETE'
+      :hasMission?'NEXT TIER AVAILABLE · '+campaignMissionLabel(nextMission)
+      :'NEXT TIER OPENS AFTER '+campaignMissionLabel(nextMission);
     card.innerHTML=`
       <div class="uc-head">
         <div class="uc-icon">${ICONS[type]}</div>
-        <div><div class="uc-name">${def.name}</div><div class="uc-desc">${
-        !open ? 'LOCKED // REACH MISSION '+TOWER_UNLOCKS[type]+' TO UNLOCK' : 
-        !hasLevel ? 'LOCKED // NEED COMMANDER LEVEL '+requiredLevel : 
-        def.desc
-      }</div></div>
+        <div class="uc-title-copy">
+          <div class="uc-name">${def.name}</div>
+          <div class="uc-desc">${def.desc}</div>
+          <div class="uc-access">${unlockText}</div>
+        </div>
       </div>
-      <div class="uc-tier"><span class="uc-tier-label">TIER</span><span class="uc-tier-count">${tier} / ${UPGRADE_TIERS}</span></div>
+      <div class="uc-tier-milestones">${levelMilestones}</div>
+      <div class="uc-tier"><span class="uc-tier-label">ARMORY TIER</span><span class="uc-tier-count">${tier} / ${UPGRADE_TIERS}</span></div>
       <div class="tier-bar">${tierSegs}</div>
-      <div class="uc-unlock">${ul}</div>
+      <div class="uc-unlock"><span class="uc-next-status">${statusText}</span><span class="uc-next-tier">${maxed?'COMPLETE':'NEXT TIER '+(tier+1)+' / '+UPGRADE_TIERS}</span></div>
       <div class="uc-stats">${statHTML}</div>
       <div class="uc-btn">${btnHTML}</div>
     `;
     if(!maxed&&canAfford){
       const btn=card.querySelector('.uc-btn .btn');
       btn.onclick=()=>{if(Progress.buyUpgrade(type)){
-        Audio.sfx('coin');this.pulseGold();this.renderUpgradeCards();
-        this.refreshMenuStats();{const nt=Progress.data.upgrades[type],ms=nt===1||nt===3;this.toast(ms?'TOWER LEVEL '+(nt===1?3:4)+' UNLOCKED: '+def.name:'UPGRADED '+def.name,'gold',ms?2800:1400);}}};}
-    return card;},
+        Audio.sfx('coin');this.pulseGold();this.renderUpgradeCards();this.refreshMenuStats();
+        const nt=Progress.data.upgrades[type];
+        const opensLevel=nt===2||nt===4;
+        this.toast(opensLevel?'TOWER LEVEL '+(nt===2?3:4)+' UNLOCKED: '+def.name:'UPGRADED '+def.name,'gold',opensLevel?2800:1400);
+      }};
+    }
+    return card;
+  },
+  setTowerBarCollapsed(collapsed){
+    this.towerBarCollapsed=!!collapsed;
+    try{localStorage.setItem('ironline_towerbar_collapsed_v1',this.towerBarCollapsed?'1':'0');}catch(e){}
+    this.applyTowerBarState();
+  },
+  applyTowerBarState(){
+    const hud=$('#hud');const bar=$('#tower-bar');const btn=$('#btn-tower-bar-toggle');
+    if(hud)hud.classList.toggle('tower-bar-collapsed',this.towerBarCollapsed);
+    if(bar)bar.hidden=this.towerBarCollapsed;
+    if(btn){
+      btn.textContent=this.towerBarCollapsed?'SHOW TOWERS ▴':'HIDE TOWERS ▾';
+      btn.setAttribute('aria-expanded',String(!this.towerBarCollapsed));
+      btn.setAttribute('aria-controls','tower-bar');
+    }
+  },
   buildTowerBar(){const bar=$('#tower-bar');if(!bar)return;bar.innerHTML='';
     this.hideTowerTooltip();
     TOWER_ORDER.forEach((type,i)=>{const d=TOWER_TYPES[type];
@@ -543,7 +559,7 @@ const UI={
       <div class="tt-name">${def.name}</div>
       <div class="tt-desc">${def.desc}</div>
       ${rows.map(([k,v,cls])=>`<div class="tt-row"><span class="k">${k}</span><span class="v ${cls}">${v}</span></div>`).join('')}
-      ${tier>0?`<div class="tt-tier">ARMORY TIER ${tier} · +${tier*12}% DMG</div>`:''}
+      ${tier>0?`<div class="tt-tier">ARMORY TIER ${tier} · +${tier*8}% DMG</div>`:''}
     `;
     tip.classList.add('show');
     const rect=anchor.getBoundingClientRect();
@@ -621,7 +637,7 @@ const UI={
     $('#sel-rate').textContent=rate;
     $('#sel-air').textContent=t.def.air?'AIR + GROUND':'GROUND';
     const c=t.upgradeCost();const up=$('#btn-upgrade');
-    if(c===null){up.innerHTML=t.level<4?'LV '+(t.level+1)+' LOCKED · ARMORY T'+(t.level===2?1:3):'MAX LEVEL';up.disabled=true;}
+    if(c===null){up.innerHTML=t.level<4?'LV '+(t.level+1)+' LOCKED · ARMORY T'+(t.level===2?2:4):'MAX LEVEL';up.disabled=true;}
     else{up.innerHTML='UPGRADE <span>'+c+' CR</span>';up.disabled=this.game.credits<c;}
     $('#sell-val').textContent=t.sellValue()+' CR';
     $('#btn-sell').disabled=tutorialStep>0;
@@ -719,7 +735,7 @@ const UI={
     const best=Progress.data.stats.bestDailyStreak||0;
     if(available){
       const nextStreak=DailyGift.computeStreak();
-      const estLow=20+(nextStreak-1)*5,estHigh=estLow+15;
+      const estLow=12+(nextStreak-1)*3,estHigh=estLow+6;
       const dots=Array.from({length:7},(_,i)=>'<i class="'+(i<nextStreak?'on':'')+'"></i>').join('');
       content.innerHTML='<div class="daily-gift-row"><div class="dg-left"><div class="k">DAY STREAK</div><div class="v">'+nextStreak+'<small> / 7</small></div><div class="gift-streak-mini">'+dots+'</div></div><div class="dg-right"><div class="k">ESTIMATED REWARD</div><div class="v">'+estLow+'–'+estHigh+' ◆</div></div></div><p>Claim once per day to keep your streak. Miss a day and the streak resets.</p><div class="modal-actions"><button class="btn primary" id="btn-claim-gift">CLAIM GIFT</button></div>';
       const claimBtn=$('#btn-claim-gift');
@@ -735,7 +751,7 @@ const UI={
     }
     UI.openModal('modal-daily-gift');
   },
-  showResult(win,stars,g,goldEarned, expEarned=0){
+  showResult(win,stars,g,goldEarned){
     if(g.isEndless){
       $('#result-kicker').textContent='SURVIVAL OVER';
       $('#result-title').textContent='WAVE '+(g.waveIndex+1)+' REACHED';
@@ -754,7 +770,6 @@ const UI={
       $('#res-kills').textContent=g.kills;
       $('#res-credits').textContent=Math.floor(g.credits);
       $('#res-gold').textContent='+0';
-      $('#res-exp').textContent='+0';
       
       const actions=$('#result-actions');actions.innerHTML='';
       const b=document.createElement('button');
@@ -780,7 +795,6 @@ const UI={
     $('#res-kills').textContent=g.kills;
     $('#res-credits').textContent=Math.floor(g.credits);
     $('#res-gold').textContent=win?'+'+goldEarned:'+0';
-    $('#res-exp').textContent=win?'+'+expEarned:'+0'; // <--- YENİ
     const actions=$('#result-actions');actions.innerHTML='';
     if(win){
       const nextStage=g.level===LEVELS_PER_STAGE?g.stageIndex+2:g.stageIndex+1;

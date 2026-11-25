@@ -5,6 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>IRONLINE // Tactical Defense</title>
 <link rel="stylesheet" href="style.css">
+
+<style id="ironline-responsive-updates">
+  #btn-tower-bar-toggle{white-space:nowrap;min-height:34px;padding:7px 11px;font-size:10px;letter-spacing:.08em;touch-action:manipulation;}
+  #tower-bar[hidden]{display:none!important;}
+  #upgrade-grid .uc-access,#upgrade-grid .uc-tier-milestones,#upgrade-grid .uc-next-status{display:block!important;visibility:visible!important;opacity:1!important;}
+  #upgrade-grid .uc-access{margin-top:5px;font-size:9px;line-height:1.35;letter-spacing:.08em;color:var(--accent);font-weight:700;}
+  #upgrade-grid .uc-tier-milestones{display:flex!important;gap:6px;flex-wrap:wrap;margin:9px 0 5px;}
+  #upgrade-grid .uc-tier-milestones span{display:inline-flex;align-items:center;padding:4px 6px;border:1px solid rgba(255,255,255,.12);border-radius:4px;font-size:9px;line-height:1.2;color:#9baab5;}
+  #upgrade-grid .uc-tier-milestones span.on{color:var(--gold);border-color:rgba(255,209,102,.5);background:rgba(255,209,102,.08);}
+  #upgrade-grid .uc-next-status{font-size:9px;line-height:1.35;color:var(--gold);}
+  #upgrade-grid .uc-title-copy{min-width:0;flex:1;}
+  @media(max-width:760px){
+    #btn-tower-bar-toggle{font-size:9px;padding:6px 8px;min-height:36px;}
+    #hud .wave-action{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;}
+    #hud #btn-tower-bar-toggle{flex:0 0 auto;}
+    #upgrade-grid .uc-access,#upgrade-grid .uc-tier-milestones,#upgrade-grid .uc-unlock{display:flex!important;flex-wrap:wrap;gap:6px;}
+    #upgrade-grid .uc-tier-milestones span{font-size:9px;}
+    #upgrade-grid .uc-next-status{font-size:9px;}
+  }
+</style>
 </head>
 <body>
 <canvas id="c"></canvas>
@@ -224,6 +244,7 @@
         <div class="wave-action">
           <button id="emp-btn" class="btn small gold" disabled>EMP PULSE · READY</button>
           <button id="wave-btn">START WAVE</button>
+          <button id="btn-tower-bar-toggle" class="btn small ghost" type="button" aria-expanded="true" aria-controls="tower-bar">HIDE TOWERS ▾</button>
         </div>
         <div id="tower-bar" class="glass"></div>
       </div>
@@ -259,7 +280,7 @@
     <p>Enemies follow the road toward your command base. Some missions have two or three approach routes. Build towers on the glowing pads beside the routes. Air units ignore the road and fly straight to the base.</p>
     <div class="howto-grid">
       <div class="howto-item"><b>1 · PICK &amp; PLACE</b><span>Click a tower in the bottom bar. A ghost attaches to your cursor. Click a glowing pad to drop it.</span></div>
-      <div class="howto-item"><b>2 · UPGRADE & TARGET</b><span>Newly placed towers are selected automatically. Towers reach LV 2 on their own; LV 3 and LV 4 unlock in the Armory (tiers 1 and 3). Upgrade them, then cycle FIRST / STRONGEST / CLOSEST targeting.</span></div>
+      <div class="howto-item"><b>2 · UPGRADE & TARGET</b><span>Newly placed towers are selected automatically. Towers reach LV 2 on their own; LV 3 unlocks at Armory Tier 2 and LV 4 at Tier 4. Armory tiers also need campaign mission clears. Upgrade them, then cycle FIRST / STRONGEST / CLOSEST targeting.</span></div>
       <div class="howto-item"><b>3 · TARGETING</b><span>Gunner and Cannon hit ground only. Missile, Laser, and Tesla hit air and ground.</span></div>
       <div class="howto-item"><b>4 · ROUTES</b><span>Later missions have 2-3 enemy paths. Spread your towers to cover all approaches.</span></div>
       <div class="howto-item"><b>5 · ENDLESS MODE</b><span>Clear Mission 20 of a theater to unlock Endless Survival for that map. Waves scale infinitely.</span></div>
@@ -267,7 +288,7 @@
       <div class="howto-item"><b>SHIELDS</b><span>Walkers and Titans carry energy shields. Laser towers pierce them; EMP drains a portion of shield energy.</span></div>
       <div class="howto-item"><b>ZOOM &amp; PAN</b><span>Mouse wheel or +/- keys to zoom. Right-drag or middle-drag to pan the map. WASD / Arrow keys also move. Press 0 to recenter.</span></div>
       <div class="howto-item"><b>HOVER PREVIEW</b><span>Hover a built tower to see its range. Hover a tower card in the bar to see full stats. Hover UPGRADE to preview next-level stats in green.</span></div>
-      <div class="howto-item"><b>HOTKEYS</b><span>1–5 towers · Space wave · E EMP · T target mode · F speed · U upgrade · X sell</span></div>
+      <div class="howto-item"><b>HOTKEYS</b><span>1–5 towers · Space wave · E EMP · T target mode · F speed · U upgrade · X sell · B tower bar</span></div>
     </div>
     <div class="modal-actions"><button class="btn primary" data-close>UNDERSTOOD</button></div>
   </div>
@@ -297,7 +318,6 @@
       <div><b id="res-kills">0</b><span>KILLS</span></div>
       <div><b id="res-credits">0</b><span>CREDITS</span></div>
       <div class="gold-cell"><b id="res-gold">+0</b><span>GOLD</span></div>
-      <div class="xp-cell"><b id="res-exp">+0</b><span>XP</span></div>
     </div>
     <div class="modal-actions" id="result-actions"></div>
   </div>

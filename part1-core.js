@@ -126,15 +126,26 @@ const TOWER_TYPES={
   tesla:{name:'TESLA',desc:'Chain lightning. Stuns targets.',cost:320,range:6.5,rate:.6,damage:30,chain:4,air:true,color:'#5effc2'}
 };
 // Central tuning table: everything that decides how hard and how generous a mission is.
-const BALANCE={hpPerWave:.035,countPerWave:.18,start:[200,6],wb:[20,4],kill:.8,base:[6,.5]};
+const BALANCE={hpPerWave:.025,countPerWave:.13,start:[200,6],wb:[20,4],kill:.8,base:[4.8,.34]};
+// In-mission upgrade costs remain separate from permanent Armory research costs.
 const UPGRADE_BASE={gunner:80,cannon:100,missile:125,laser:160,tesla:200};
-const ARMORY_RATIO=[1,1.9,3.2,5,7.5];
-const upgradeCostFor=(type,t)=>Math.round(UPGRADE_BASE[type]*ARMORY_RATIO[t]/5)*5;
-const PLOT_FACTOR={harbor:.55,desert:.45,arctic:.5,cyber:.47};
+const ARMORY_BASE_COST={gunner:45,cannon:60,missile:80,laser:100,tesla:115};
+const ARMORY_RATIO=[1,1.65,2.4,3.35,4.55];
+const upgradeCostFor=(type,t)=>Math.round(ARMORY_BASE_COST[type]*ARMORY_RATIO[t]/5)*5;
 const UPGRADE_TIERS=5;
+const ARMORY_TIER_MISSION_OFFSETS=[2,5,9,14,20];
 const LEVELS_PER_STAGE=20, ENDLESS_LEVEL=99;
-// Campaign index G = stageIndex*20 + level. Stage 2+ therefore starts with every tower and enemy type unlocked.
+// Campaign index G = stageIndex*20 + level. Towers become buildable at the listed mission.
 const TOWER_UNLOCKS={gunner:1,cannon:3,missile:9,laser:13,tesla:17};
+const PLOT_COUNT={harbor:16,desert:16,arctic:13,cyber:16};
+function armoryTierMissionRequirement(type,tier=0){
+  return (TOWER_UNLOCKS[type]||1)+(ARMORY_TIER_MISSION_OFFSETS[tier]??ARMORY_TIER_MISSION_OFFSETS[ARMORY_TIER_MISSION_OFFSETS.length-1]);
+}
+function campaignMissionLabel(index){
+  const stage=Math.floor((index-1)/LEVELS_PER_STAGE)+1;
+  const level=((index-1)%LEVELS_PER_STAGE)+1;
+  return stage===1?'MISSION '+String(level).padStart(2,'0'):'THEATER '+String(stage).padStart(2,'0')+' · MISSION '+String(level).padStart(2,'0');
+}
 const ENEMY_UNLOCK={infantry:1,technical:2,apc:4,tank:7,drone:11,heli:9,jet:13,robot:31,heavy:55};
 // Air enemies only appear once Missile (G9) exists, so every wave stays answerable with the towers unlocked.
 const STAGE_PROFILE=[
@@ -159,7 +170,7 @@ const START_CREDITS=[
 const ROUTE_TABLE=[[0],[1],[2],[0],[1],[0,1],[0,2],[1,2],[0,1],[0,2],[0,1,2],[1,2],[0,1],[0,2],[0,1,2],[1,2],[0,1],[0,1,2],[0,2],[0,1,2]];
 const TURN={gunner:{rate:9,tol:.14},cannon:{rate:4.5,tol:.09},missile:{rate:6,tol:.25},laser:{rate:7,tol:9},tesla:{rate:8,tol:9}};
 const gIndex=(s,l)=>s*LEVELS_PER_STAGE+l;
-const towerMaxLevel=(type,tier=Progress.data.upgrades[type]||0)=>2+(tier>=1?1:0)+(tier>=3?1:0);
+const towerMaxLevel=(type,tier=Progress.data.upgrades[type]||0)=>2+(tier>=2?1:0)+(tier>=4?1:0);
 function towerUnlockedInCampaign(type){const L=TOWER_UNLOCKS[type]||1;
   return L<=1||(Progress.data.upgrades[type]||0)>0||Progress.levelUnlocked(1,L);}
 const levelKind=l=>l%5===0?'boss':l%5===2?'swarm':l%5===4?'heavy':'mixed';
@@ -180,7 +191,7 @@ function getUpgradeMultipliers(type){
   return {damage:1+tier*0.08,range:1+tier*0.03,rate:1+tier*0.04,tier};
 }
 
-const ENEMY_STRENGTH_MULTIPLIER=0.95; // Global 15% enemy difficulty reduction
+const ENEMY_STRENGTH_MULTIPLIER=0.85; // Correct global 15% reduction to HP, shields, speed and leak damage
 const ENEMY_TYPES={
   infantry:{name:'INFANTRY',hp:42,speed:2.3,reward:5,cost:1,air:false,damage:1,build:()=>ModelFactory.infantry(),barY:1.9},
   technical:{name:'TECHNICAL',hp:65,speed:4.0,reward:8,cost:1.3,air:false,damage:2,build:()=>ModelFactory.technical(),barY:2.0},
@@ -195,16 +206,16 @@ const ENEMY_TYPES={
 
 /* ========== ACHIEVEMENTS ========== */
 const ACHIEVEMENTS=[
-  {id:'first_blood',name:'FIRST CONTACT',desc:'Destroy your first enemy',target:1,stat:'totalKills',reward:15},
-  {id:'hunter',name:'HUNTER',desc:'Destroy 200 enemies',target:200,stat:'totalKills',reward:30},
-  {id:'exterminator',name:'EXTERMINATOR',desc:'Destroy 2,000 enemies',target:2000,stat:'totalKills',reward:75},
-  {id:'annihilator',name:'ANNIHILATOR',desc:'Destroy 15,000 enemies',target:15000,stat:'totalKills',reward:180},
-  {id:'engineer',name:'FIELD ENGINEER',desc:'Build 100 towers',target:100,stat:'totalTowersBuilt',reward:40},
-  {id:'max_tier',name:'PEAK PERFORMANCE',desc:'Upgrade any tower to max tier',check:s=>(s.highestTowerLevel||0)>=4||(s.highestArmoryTier||0)>=5,reward:65},
-  {id:'flawless',name:'FLAWLESS VICTORY',desc:'Win 3 missions without losing a single life',target:3,stat:'flawlessWins',reward:80},
-  {id:'emp_master',name:'EMP MASTER',desc:'Deploy 50 EMP pulses',target:50,stat:'empUses',reward:45},
-  {id:'survivor',name:'SURVIVOR',desc:'Reach wave 20 in Endless mode',target:20,stat:'maxEndlessWave',reward:60},
-  {id:'loyalty',name:'LOYAL DEFENDER',desc:'Claim daily gift 7 days in a row',target:7,stat:'bestDailyStreak',reward:100}
+  {id:'first_blood',name:'FIRST CONTACT',desc:'Destroy your first enemy',target:1,stat:'totalKills',reward:10},
+  {id:'hunter',name:'HUNTER',desc:'Destroy 200 enemies',target:200,stat:'totalKills',reward:20},
+  {id:'exterminator',name:'EXTERMINATOR',desc:'Destroy 2,000 enemies',target:2000,stat:'totalKills',reward:45},
+  {id:'annihilator',name:'ANNIHILATOR',desc:'Destroy 15,000 enemies',target:15000,stat:'totalKills',reward:100},
+  {id:'engineer',name:'FIELD ENGINEER',desc:'Build 100 towers',target:100,stat:'totalTowersBuilt',reward:25},
+  {id:'max_tier',name:'PEAK PERFORMANCE',desc:'Upgrade any tower to max tier',check:s=>(s.highestTowerLevel||0)>=4||(s.highestArmoryTier||0)>=5,reward:45},
+  {id:'flawless',name:'FLAWLESS VICTORY',desc:'Win 3 missions without losing a single life',target:3,stat:'flawlessWins',reward:50},
+  {id:'emp_master',name:'EMP MASTER',desc:'Deploy 50 EMP pulses',target:50,stat:'empUses',reward:30},
+  {id:'survivor',name:'SURVIVOR',desc:'Reach wave 20 in Endless mode',target:20,stat:'maxEndlessWave',reward:35},
+  {id:'loyalty',name:'LOYAL DEFENDER',desc:'Claim daily gift 7 days in a row',target:7,stat:'bestDailyStreak',reward:55}
 ];
 function notifyAchievement(a){
   const gameScreen=document.getElementById('screen-game');
@@ -325,8 +336,6 @@ Settings.load();
 
 /* ========== PROGRESS ========== */
 const Progress={data:{
-  playerExp: 0,
-  playerLevel: 1,
   unlockedStage:1,completed:{},stars:{},gold:0,
   upgrades:{gunner:0,cannon:0,missile:0,laser:0,tesla:0},
   tutorialDone:false,tutorialArmoryDone:false, empTutorialDone:false,
@@ -339,14 +348,14 @@ const Progress={data:{
   migrateV2(s){const c={},st={};for(const k in (s.completed||{})){const [a,b]=k.split('-').map(Number);
       for(const n of [b*2-1,b*2]){c[a+'-'+n]=true;st[a+'-'+n]=(s.stars||{})[k]||1;}}
     this.data.completed=c;this.data.stars=st;},
-  load(){try{const s=JSON.parse(localStorage.getItem('ironline_progress_v1'));if(s){Object.assign(this.data,s);if(!s.ver)this.migrateV2(s);}this.data.ver=2;
+  load(){try{const s=JSON.parse(localStorage.getItem('ironline_progress_v1'));if(s){Object.assign(this.data,s);if(!s.ver)this.migrateV2(s);}this.data.ver=3;
     if(typeof this.data.gold!=='number')this.data.gold=0;
     if(!this.data.upgrades)this.data.upgrades={};
     if(typeof this.data.tutorialDone==='undefined')this.data.tutorialDone=false;
     if(typeof this.data.tutorialArmoryDone==='undefined')this.data.tutorialArmoryDone=false;
     if(typeof this.data.empTutorialDone==='undefined')this.data.empTutorialDone=false;
-    if(typeof this.data.playerExp !== 'number') this.data.playerExp = 0;
-    if(typeof this.data.playerLevel !== 'number') this.data.playerLevel = 1;
+    // Remove obsolete Commander XP fields from legacy saves; progression is gold + campaign missions only.
+    delete this.data.playerExp;delete this.data.playerLevel;
     if(!this.data.endlessUnlocked)this.data.endlessUnlocked={1:false,2:false,3:false,4:false};
     if(!this.data.endlessHighScores)this.data.endlessHighScores={1:0,2:0,3:0,4:0};
     for(const t of TOWER_ORDER){if(typeof this.data.upgrades[t]!=='number')this.data.upgrades[t]=0;}
@@ -374,35 +383,32 @@ const Progress={data:{
     this.data.completed[key]=true;
     this.data.stars[key]=bestStars;
     if(l===LEVELS_PER_STAGE&&s<4){this.data.unlockedStage=Math.max(this.data.unlockedStage,s+1);this.data.endlessUnlocked[s]=true;}
-    // First clears remain the main campaign-gold source. Replays pay only 10%,
-    // while improving a mission's star rating grants a small one-time bonus.
-    const firstClearReward=stars*22+l*2+(s-1)*18;
-    const replayReward=Math.max(2,Math.floor(firstClearReward*.10));
-    const starImprovement=Math.max(0,bestStars-previousStars)*12;
+    // Gold is the only permanent progression currency. First clears pay well;
+    // replays are deliberately modest, with a small bonus for a better star result.
+    const firstClearReward=8+stars*14+l+(s-1)*12;
+    const replayReward=Math.max(2,Math.floor(firstClearReward*.05));
+    const starImprovement=Math.max(0,bestStars-previousStars)*8;
     const gold=wasCompleted?replayReward+starImprovement:firstClearReward;
     this.data.gold+=gold;
-    const expEarned = 20 + l * 5 + stars * 10;
-    this.data.playerExp += expEarned;
-    
-    const xpRequirements = [0, 50, 100, 175, 300, 450, 620, 820, 1100, 1500, 1950, 2500, 3300, 4000, 5000]; 
-    const getXpNeeded = (lvl) => xpRequirements[lvl] || (5000 + ((lvl - 14) * 500));
-
-    let reqXp = getXpNeeded(this.data.playerLevel);
-
-    while (this.data.playerExp >= reqXp) {
-      this.data.playerExp -= reqXp;
-      this.data.playerLevel++;
-      
-      reqXp = getXpNeeded(this.data.playerLevel);
-      
-      setTimeout(()=>UI.toast('COMMANDER LEVEL UP! Lv '+this.data.playerLevel,'gold',4000), 1500);
-    }
     this.save();
-    return { gold, expEarned };
+    return { gold };
   },
-  canUpgrade(type){const t=this.data.upgrades[type]||0;if(t>=UPGRADE_TIERS)return false;if(!towerUnlockedInCampaign(type))return false;
+  campaignProgressIndex(){
+    let cleared=0;
+    for(let index=1;index<=MAPS.length*LEVELS_PER_STAGE;index++){
+      const stage=Math.floor((index-1)/LEVELS_PER_STAGE)+1;
+      const level=((index-1)%LEVELS_PER_STAGE)+1;
+      if(!this.data.completed[stage+'-'+level])break;
+      cleared=index;
+    }
+    return cleared;
+  },
+  armoryRequirement(type,tier=this.data.upgrades[type]||0){return armoryTierMissionRequirement(type,tier);},
+  canUpgrade(type){const t=this.data.upgrades[type]||0;if(t>=UPGRADE_TIERS||!towerUnlockedInCampaign(type))return false;
+    if(this.campaignProgressIndex()<this.armoryRequirement(type,t))return false;
     return this.data.gold>=upgradeCostFor(type,t);},
-  buyUpgrade(type){const t=this.data.upgrades[type]||0;if(t>=UPGRADE_TIERS)return false;if(!towerUnlockedInCampaign(type))return false;
+  buyUpgrade(type){const t=this.data.upgrades[type]||0;if(t>=UPGRADE_TIERS||!towerUnlockedInCampaign(type))return false;
+    if(this.campaignProgressIndex()<this.armoryRequirement(type,t))return false;
     const cost=upgradeCostFor(type,t);if(this.data.gold<cost)return false;
     this.data.gold-=cost;this.data.upgrades[type]=t+1;
     this.data.stats.highestArmoryTier=Math.max(this.data.stats.highestArmoryTier||0,this.data.upgrades[type]);
@@ -475,9 +481,9 @@ const DailyGift={
   claim(){
     if(!this.isAvailable())return null;
     const streak=this.computeStreak();
-    const base=20;
-    const streakBonus=(streak-1)*5;
-    const random=Math.floor(Math.random()*16);
+    const base=12;
+    const streakBonus=(streak-1)*3;
+    const random=Math.floor(Math.random()*7);
     const reward=base+streakBonus+random;
     Progress.data.lastDailyGift=Date.now();
     Progress.data.dailyStreak=streak;

@@ -112,25 +112,50 @@ function makeGroundTexture(config){
   const tex=new THREE.CanvasTexture(c);tex.wrapS=tex.wrapT=THREE.RepeatWrapping;
   tex.repeat.set(10,10);tex.colorSpace=THREE.SRGBColorSpace;return tex;}
 
-function generatePlots(paths,factor=.5){
+function distanceToPath(x,z,path){
+  let nearest=Infinity;
+  for(let i=0;i<path.length-1;i++){
+    const a=path[i],b=path[i+1],dx=b[0]-a[0],dz=b[1]-a[1];
+    const len2=dx*dx+dz*dz;if(len2<1e-6)continue;
+    const t=clamp(((x-a[0])*dx+(z-a[1])*dz)/len2,0,1);
+    nearest=Math.min(nearest,dist2(x,z,a[0]+dx*t,a[1]+dz*t));
+  }
+  return nearest;
+}
+function generatePlots(paths,desiredCount=16){
+  if(!paths.length)return [];
+  const base=paths[0][paths[0].length-1];
+  const entrances=paths.map(path=>path[Math.min(1,path.length-1)]);
   const candidates=[];
-  for(const path of paths){
-    for(let i=0;i<path.length-1;i++){
-      const a=path[i],b=path[i+1];const dx=b[0]-a[0],dz=b[1]-a[1];
-      const len=Math.hypot(dx,dz);const nx=-dz/len,nz=dx/len;
-      const fracs=len>12?[.22,.5,.78]:[.5];
-      for(const f of fracs)for(const side of [-1,1]){
-        const x=a[0]+dx*f+nx*4.3*side;const z=a[1]+dz*f+nz*4.3*side;
-        if(Math.abs(x)>20.5||Math.abs(z)>20.5)continue;
-        candidates.push({x,z});}}}
-  const valid=[];
-  for(const p of candidates){
-    if(valid.some(q=>dist2(p.x,p.z,q.x,q.z)<3.2))continue;
-    if(nearAnyPath(p.x,p.z,paths,3.2))continue;
-    valid.push(p);}
-  const want=Math.max(6,Math.round(Math.min(28,18+paths.length*4)*factor));
-  if(valid.length<=want)return valid;
-  return Array.from({length:want},(_,i)=>valid[Math.round(i*(valid.length-1)/(want-1))]);}
+  // A 2.25-unit tactical lattice gives each approach several clear firing positions.
+  // Pads stay outside the road shoulder, away from spawn gates and the command base.
+  for(let ix=-8;ix<=8;ix++)for(let iz=-8;iz<=8;iz++){
+    const x=ix*2.25,z=iz*2.25;
+    if(Math.abs(x)>18||Math.abs(z)>18)continue;
+    const routeDistances=paths.map(path=>distanceToPath(x,z,path));
+    const nearest=Math.min(...routeDistances);
+    if(nearest<3.9||nearest>7.5)continue;
+    if(dist2(x,z,base[0],base[1])<7.3)continue;
+    if(entrances.some(p=>dist2(x,z,p[0],p[1])<5.6))continue;
+    const route=routeDistances.indexOf(nearest);
+    candidates.push({x,z,nearest,route});
+  }
+  const selected=[];
+  const routeUse=Array(paths.length).fill(0);
+  while(candidates.length&&selected.length<desiredCount){
+    let bestIndex=-1,bestScore=-Infinity;
+    for(let i=0;i<candidates.length;i++){
+      const p=candidates[i];
+      const spread=selected.length?Math.min(...selected.map(q=>dist2(p.x,p.z,q.x,q.z))):9;
+      if(spread<4.3)continue;
+      const score=spread-Math.abs(p.nearest-5.5)*.2-routeUse[p.route]*1.15;
+      if(score>bestScore){bestScore=score;bestIndex=i;}
+    }
+    if(bestIndex<0)break;
+    const p=candidates.splice(bestIndex,1)[0];selected.push({x:p.x,z:p.z});routeUse[p.route]++;
+  }
+  return selected;
+}
 
 function drawRoad(scene, path, config){
   const v3Points=path.map(p=>new THREE.Vector3(p[0],0,p[1]));
@@ -145,7 +170,7 @@ function drawRoad(scene, path, config){
   const numSamples=Math.max(40,path.length*20);
   const smoothPts=curve.getSpacedPoints(numSamples);
   
-  const roadWidth=3.3;
+  const roadWidth=3.6;
   const halfW=roadWidth/2;
   
   const buildShape=(offset)=>{
@@ -229,7 +254,7 @@ function drawRoad(scene, path, config){
 function buildMap(scene, config, activeRoutes){
   const uniqueTextures=[];
   const paths=activeRoutes.map(r=>r.path);
-  const plotsData=generatePlots(paths,PLOT_FACTOR[config.id]||.5);
+  const plotsData=generatePlots(paths,PLOT_COUNT[config.id]||16);
 
   const tex=makeGroundTexture(config);tex.repeat.set(15.6,15.6);uniqueTextures.push(tex);
   const ground=new THREE.Mesh(new THREE.PlaneGeometry(100,100),
