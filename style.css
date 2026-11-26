@@ -17,7 +17,7 @@ body{margin:0;overflow:hidden;background:var(--bg);color:var(--text);
 button,.btn,.ctrl,.tower-card,.toggle,.map-card,.level-node,.endless-banner{touch-action:manipulation}
 canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block;outline:none;touch-action:none}
 #vignette{position:fixed;inset:0;pointer-events:none;z-index:2;
-  background:radial-gradient(circle at 50% 45%,transparent 35%,rgba(0,4,8,.55) 100%)}
+  background:radial-gradient(circle at 50% 45%,transparent 48%,rgba(6,16,26,.28) 100%)}
 #damage-flash{position:fixed;inset:0;pointer-events:none;z-index:3;opacity:0;
   background:radial-gradient(circle at 50% 50%,transparent 25%,rgba(255,30,20,.45) 100%);
   transition:opacity .08s ease}
@@ -99,7 +99,7 @@ h3{font-size:14px;letter-spacing:.18em}
 
 /* Main Menu */
 #screen-menu{justify-content:space-between;padding:calc(34px + var(--sat)) var(--px-r) calc(26px + var(--sab)) var(--px-l);
-  background:linear-gradient(90deg,rgba(2,8,14,.92) 0%,rgba(2,8,14,.45) 55%,transparent 100%)}
+  background:linear-gradient(90deg,rgba(4,14,24,.74) 0%,rgba(4,14,24,.24) 55%,transparent 100%)}
 .menu-top{display:flex;justify-content:space-between;align-items:flex-start}
 .menu-brand{display:flex;align-items:center;gap:12px}
 .brand-mark{width:34px;height:34px;border:1px solid var(--accent);transform:rotate(45deg);
@@ -122,8 +122,8 @@ h3{font-size:14px;letter-spacing:.18em}
   gap:20px;background:linear-gradient(180deg,rgba(2,8,14,.92),transparent)}
 .page-head .left h2{margin-top:6px}
 .page-head .left p{margin:8px 0 0;font-size:12px;color:var(--muted);max-width:520px;line-height:1.6}
-#screen-levels,#screen-endless-maps{background:linear-gradient(180deg,rgba(2,8,14,.88),rgba(2,8,14,.62));overflow-y:auto}
-#screen-maps{background:linear-gradient(180deg,rgba(2,8,14,.88),rgba(2,8,14,.62));overflow:hidden;min-height:100vh;min-height:100dvh}
+#screen-levels,#screen-endless-maps{background:linear-gradient(180deg,rgba(4,14,24,.68),rgba(4,14,24,.40));overflow-y:auto}
+#screen-maps{background:linear-gradient(180deg,rgba(4,14,24,.68),rgba(4,14,24,.40));overflow:hidden;min-height:100vh;min-height:100dvh}
 #screen-upgrades{background:linear-gradient(180deg,rgba(2,8,14,.88),rgba(2,8,14,.62));overflow:hidden;min-height:100vh;min-height:100dvh}
 #screen-upgrades .page-head{padding:calc(18px + var(--sat)) var(--px-r) 12px var(--px-l);gap:14px}
 #screen-upgrades .page-head .left p{margin:4px 0 0;font-size:11px;line-height:1.4}

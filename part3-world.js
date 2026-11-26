@@ -61,13 +61,13 @@ class Bolts{
     it.mat.opacity=Math.max(0,it.life/.16);if(it.life<=0)it.line.visible=false;}}}
 class Flashes{
   constructor(scene){this.items=[];for(let i=0;i<24;i++){
-    const mat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false,toneMapped:false});
+    const mat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false});
     const mesh=new THREE.Mesh(GEO.sphereLow,mat);mesh.visible=false;scene.add(mesh);
-    this.items.push({mesh,mat,life:0,max:.09,size:.5});}}
-  fire(x,y,z,color,size=.6){const it=this.items.find(i=>i.life<=0)||this.items[0];
-    it.mesh.position.set(x,y,z);it.mat.color.set(color);it.life=it.max=.09;it.size=size;it.mesh.visible=true;}
+    this.items.push({mesh,mat,life:0,max:.08,size:.35});}}
+  fire(x,y,z,color,size=.35){const it=this.items.find(i=>i.life<=0)||this.items[0];
+    it.mesh.position.set(x,y,z);it.mat.color.set(color);it.life=it.max=.08;it.size=size;it.mesh.visible=true;}
   update(dt){for(const it of this.items){if(it.life<=0)continue;it.life-=dt;
-    const t=Math.max(0,it.life/it.max);it.mesh.scale.setScalar(it.size*(1.6-.6*t));it.mat.opacity=t*.9;
+    const t=Math.max(0,it.life/it.max);it.mesh.scale.setScalar(it.size*(1.25-.25*t));it.mat.opacity=t*.45;
     if(it.life<=0)it.mesh.visible=false;}}}
 class Weather{
   constructor(scene,type,accent){this.type=type;

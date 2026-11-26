@@ -298,14 +298,14 @@ class Tower{
       this.gunnerBarrelIndex=(idx+1)%Math.max(1,this.barrels.length);
       if(barrel)barrel.userData.recoil=.20;
       this.game.projectiles.push(new Bullet(this.game,start,this.leadPoint(start,52,target),this.damage,0x9ff5ff,false));
-      this.game.fx.flash(start.x,start.y,start.z,0xbff8ff,.45);this.game.fx.spawn(start.x,start.y,start.z,0x9ff5ff,4,2.4,2,.18);
+      this.game.fx.flash(start.x,start.y,start.z,0xbff8ff,.20);this.game.fx.spawn(start.x,start.y,start.z,0x9ff5ff,4,2.4,2,.18);
       Audio.sfx('gun',this.plot.x);
 
     }else if(this.type==='cannon'){
       const start=this.getMuzzleWorld();const tp=this.leadPoint(start,24,target,.4);tp.y=.3;
       this.game.projectiles.push(new CannonShell(this.game,start,tp,this.damage,this.def.splash,0xffb347));
       this.cannonRecoil=.24;
-      this.game.fx.flash(start.x,start.y,start.z,0xffd090,1.1);this.game.fx.spawn(start.x,start.y,start.z,0xffc06a,12,5.5,3,.28);
+      this.game.fx.flash(start.x,start.y,start.z,0xffd090,.50);this.game.fx.spawn(start.x,start.y,start.z,0xffc06a,12,5.5,3,.28);
       Audio.sfx('cannon',this.plot.x);
 
     }else if(this.type==='missile'){
@@ -315,7 +315,7 @@ class Tower{
       if(tubes.length)this.missileTubeIndex=(idx+1)%tubes.length;
       this.game.projectiles.push(new Missile(this.game,start,target,this.damage,0xff6b6b));
       this.missileRecoil=.22;
-      this.game.fx.flash(start.x,start.y,start.z,0xffb080,.8);this.game.fx.spawn(start.x,start.y,start.z,0xff9a62,5,2.5,2,.24);
+      this.game.fx.flash(start.x,start.y,start.z,0xffb080,.38);this.game.fx.spawn(start.x,start.y,start.z,0xff9a62,5,2.5,2,.24);
       Audio.sfx('missile',this.plot.x);
 
     }else if(this.type==='tesla'){
@@ -332,7 +332,7 @@ class Tower{
         pts.push(e.group.position.clone().add(V3(0,e.def.barY*.5,0)));
       }
       this.teslaPulse=1;
-      this.game.fx.flash(start.x,start.y,start.z,0x9fffd8,.9);this.game.fx.spawn(start.x,start.y,start.z,0x75ffc8,9,3.5,2,.35);
+      this.game.fx.flash(start.x,start.y,start.z,0x9fffd8,.42);this.game.fx.spawn(start.x,start.y,start.z,0x75ffc8,9,3.5,2,.35);
       this.game.fx.bolt(pts);Audio.sfx('tesla',this.plot.x);
     }
   }
@@ -514,10 +514,10 @@ class GameWorld{
     if(UI.game===this)UI.updateCredits(this);
   }
   buildScene(){const s=this.scene;
-    s.fog=new THREE.FogExp2(this.map.fog,.016);
+    s.fog=new THREE.FogExp2(this.map.fog,.0105);
     const harborLighting=this.stageIndex===0;
-    s.add(new THREE.HemisphereLight(this.map.sky,this.map.hemi,harborLighting?1.56:1.54));
-    const dir=new THREE.DirectionalLight(0xffffff,harborLighting?3.68:2.92);
+    s.add(new THREE.HemisphereLight(this.map.sky,this.map.hemi,harborLighting?2.05:1.95));
+    const dir=new THREE.DirectionalLight(0xfff8eb,harborLighting?4.25:3.55);
     dir.position.set(18,32,12);dir.castShadow=Settings.data.shadows;
     dir.shadow.mapSize.set(1536,1536);
     dir.shadow.camera.left=-28;dir.shadow.camera.right=28;
@@ -526,11 +526,11 @@ class GameWorld{
     dir.shadow.bias=-.0006;s.add(dir);
     // Soft opposing fill keeps tower silhouettes and build pads readable,
     // especially on the rain-soaked opening Harbor map.
-    const fill=new THREE.DirectionalLight(0x9fc4d5,harborLighting?0.42:0.22);
+    const fill=new THREE.DirectionalLight(0xb8e2f4,harborLighting?0.82:0.62);
     fill.position.set(-18,15,-14);s.add(fill);
     const accent=new THREE.Color(this.map.accent);
-    const p1=new THREE.PointLight(accent,harborLighting?21:18,42);p1.position.set(-10,8,-10);s.add(p1);
-    const p2=new THREE.PointLight(0xff5a3c,harborLighting?13:12,36);p2.position.set(10,5,10);s.add(p2);
+    const p1=new THREE.PointLight(accent,harborLighting?25:22,48);p1.position.set(-10,8,-10);s.add(p1);
+    const p2=new THREE.PointLight(0xff7b54,harborLighting?16:15,42);p2.position.set(10,5,10);s.add(p2);
     const built=buildMap(s,this.map,this.activeRoutes);
     this.plots=built.plots;this.baseObj=built.base;
     this.baseRadar=built.base.userData.radar;this.baseShield=built.base.userData.shield;
@@ -547,14 +547,14 @@ class GameWorld{
     this.selectionBox.add(edges);this.selectionBox.visible=false;s.add(this.selectionBox);
     this.rangeRing=new THREE.Mesh(new THREE.RingGeometry(.97,1,64),
       new THREE.MeshBasicMaterial({color:0x5ee7ff,toneMapped:false,transparent:true,opacity:.5,side:THREE.DoubleSide,depthWrite:false}));
-    this.rangeRing.rotation.x=-Math.PI/2;this.rangeRing.visible=false;this.rangeRing.position.y=.18;s.add(this.rangeRing);
+    this.rangeRing.rotation.x=-Math.PI/2;this.rangeRing.visible=false;this.rangeRing.position.y=.16;s.add(this.rangeRing);
     this.ghostRange=new THREE.Mesh(new THREE.RingGeometry(.97,1,64),
       new THREE.MeshBasicMaterial({color:0x5effc2,toneMapped:false,transparent:true,opacity:.35,side:THREE.DoubleSide,depthWrite:false}));
-    this.ghostRange.rotation.x=-Math.PI/2;this.ghostRange.visible=false;this.ghostRange.position.y=.18;s.add(this.ghostRange);
+    this.ghostRange.rotation.x=-Math.PI/2;this.ghostRange.visible=false;this.ghostRange.position.y=.20;s.add(this.ghostRange);
     // v2.3.2 — faint range ring shown when hovering an existing tower
     this.hoverRange=new THREE.Mesh(new THREE.RingGeometry(.94,1,64),
       new THREE.MeshBasicMaterial({color:0xffffff,toneMapped:false,transparent:true,opacity:.28,side:THREE.DoubleSide,depthWrite:false}));
-    this.hoverRange.rotation.x=-Math.PI/2;this.hoverRange.visible=false;this.hoverRange.position.y=.18;s.add(this.hoverRange);
+    this.hoverRange.rotation.x=-Math.PI/2;this.hoverRange.visible=false;this.hoverRange.position.y=.24;s.add(this.hoverRange);
     
     this.tutMarker=new THREE.Group();
     const arrowGeo = new THREE.ConeGeometry(0.8, 2, 4);
