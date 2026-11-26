@@ -12,6 +12,7 @@ const UI={
   init(){
     try{this.towerBarCollapsed=localStorage.getItem('ironline_towerbar_collapsed_v1')==='1';}catch(e){}
     this.buildTowerBar();this.bind();this.refreshMenuStats();this.applyTowerBarState();
+    this.bindMobileTowerStats();
   },
   bind(){
     $('#btn-deploy').onclick=()=>{Audio.ensure();Audio.sfx('ui');this.buildMaps();this.show('screen-maps');};
@@ -529,6 +530,65 @@ const UI={
       card.onmouseleave=()=>this.hideTowerTooltip();
       bar.appendChild(card);});
     this.updateTowerBar();},
+  bindMobileTowerStats(){
+    const btn=$('#btn-mobile-tower-stats');
+    const modal=$('#mobile-tower-stats-modal');
+    const closeBtn=$('#btn-close-tower-stats');
+    if(!btn||!modal)return;
+
+    const renderStats=()=>{
+      const list=$('#mobile-tower-stats-list');
+      if(!list)return;
+      const isMobileView=window.matchMedia('(max-width:950px),(max-height:600px) and (orientation:landscape)').matches;
+      if(!isMobileView){modal.classList.add('hidden');return;}
+
+      list.innerHTML=TOWER_ORDER.map(type=>{
+        const def=TOWER_TYPES[type];
+        const mult=typeof getUpgradeMultipliers==='function'?getUpgradeMultipliers(type):{damage:1,range:1,rate:1};
+        const unlocked=this.game&&typeof this.game.isUnlocked==='function'
+          ?this.game.isUnlocked(type)
+          :(typeof towerUnlockedInCampaign==='function'?towerUnlockedInCampaign(type):true);
+        const dmgVal=def.dps?Math.round(def.dps*mult.damage)+'/s':Math.round((def.damage||0)*mult.damage);
+        const dmgLabel=def.dps?'DPS':'DMG';
+        const rateText=def.rate?(def.rate*mult.rate).toFixed(1)+'/s':'BEAM';
+        const rangeText=(def.range*mult.range).toFixed(1);
+        const targetText=def.air?'AIR+GND':'GROUND';
+        const lockHtml=!unlocked?`<span class="mts-lock">LV ${TOWER_UNLOCKS[type]||''}</span>`:`<span>${targetText}</span>`;
+
+        return `
+          <div class="mts-item" style="border-left:3px solid ${def.color}">
+            <div class="mts-top">
+              <span class="mts-name" style="color:${def.color}">${def.name}</span>
+              <span class="mts-cost">${def.cost} CR</span>
+            </div>
+            <div class="mts-meta">
+              <span>${dmgLabel}: <b>${dmgVal}</b></span>
+              <span>RNG: <b>${rangeText}</b></span>
+              <span>SPD: <b>${rateText}</b></span>
+              ${lockHtml}
+            </div>
+          </div>`;
+      }).join('');
+    };
+
+    btn.onclick=(e)=>{
+      e.stopPropagation();
+      const willOpen=modal.classList.contains('hidden');
+      if(willOpen){renderStats();modal.classList.remove('hidden');}
+      else{modal.classList.add('hidden');}
+    };
+
+    if(closeBtn)closeBtn.onclick=(e)=>{
+      e.stopPropagation();
+      modal.classList.add('hidden');
+    };
+
+    document.addEventListener('click',(e)=>{
+      if(!modal.classList.contains('hidden')&&!modal.contains(e.target)&&e.target!==btn){
+        modal.classList.add('hidden');
+      }
+    });
+  },
   updateTowerBar(){if(!this.game)return;
     $$('.tower-card').forEach(card=>{const t=card.dataset.type;
       const def=TOWER_TYPES[t];
