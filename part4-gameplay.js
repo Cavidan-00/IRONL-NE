@@ -997,7 +997,7 @@ class GameWorld{
     if(this.baseRadar)this.baseRadar.rotation.y+=sdt*.5;
     if(this.baseShield)this.baseShield.material.opacity=.045+Math.sin(performance.now()*.002)*.015;
     for(const p of this.plots)if(p.hover.visible)
-      p.hover.scale.setScalar(1+Math.sin(performance.now()*.006)*.08);
+      p.hover.scale.setScalar(1.02);
     if(this.hoverRange&&this.hoverRange.visible){
       this.hoverRange.material.opacity=.22+Math.sin(performance.now()*.004)*.06;
     }
