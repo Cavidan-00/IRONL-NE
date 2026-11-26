@@ -168,6 +168,7 @@ const UI={
   },
   startLevel(stage,level){
     this.closeAllModals();
+    if(this.closeMobileTowerStats)this.closeMobileTowerStats();
     this.clearTutorial();
     this.clearAirWarning();
     const old=App.world;if(old)old.dispose();
@@ -311,6 +312,7 @@ const UI={
     message.classList.remove('hidden');
   },
   quitToMaps(){Audio.stopMusic();
+    if(this.closeMobileTowerStats)this.closeMobileTowerStats();
     this.clearTutorial();
     this.clearAirWarning();
     if(this.game){this.game.dispose();this.game=null;}
@@ -534,60 +536,95 @@ const UI={
     const btn=$('#btn-mobile-tower-stats');
     const modal=$('#mobile-tower-stats-modal');
     const closeBtn=$('#btn-close-tower-stats');
-    if(!btn||!modal)return;
+    const list=$('#mobile-tower-stats-list');
+    if(!btn||!modal||!list)return;
+    const MOBILE_MQ='(max-width:950px),(max-height:600px) and (orientation:landscape)';
+    const isMobileView=()=>window.matchMedia(MOBILE_MQ).matches;
+    const isOpen=()=>modal.classList.contains('open');
 
     const renderStats=()=>{
-      const list=$('#mobile-tower-stats-list');
-      if(!list)return;
-      const isMobileView=window.matchMedia('(max-width:950px),(max-height:600px) and (orientation:landscape)').matches;
-      if(!isMobileView){modal.classList.add('hidden');return;}
-
       list.innerHTML=TOWER_ORDER.map(type=>{
         const def=TOWER_TYPES[type];
-        const mult=typeof getUpgradeMultipliers==='function'?getUpgradeMultipliers(type):{damage:1,range:1,rate:1};
-        const unlocked=this.game&&typeof this.game.isUnlocked==='function'
-          ?this.game.isUnlocked(type)
-          :(typeof towerUnlockedInCampaign==='function'?towerUnlockedInCampaign(type):true);
-        const dmgVal=def.dps?Math.round(def.dps*mult.damage)+'/s':Math.round((def.damage||0)*mult.damage);
-        const dmgLabel=def.dps?'DPS':'DMG';
-        const rateText=def.rate?(def.rate*mult.rate).toFixed(1)+'/s':'BEAM';
-        const rangeText=(def.range*mult.range).toFixed(1);
-        const targetText=def.air?'AIR+GND':'GROUND';
-        const lockHtml=!unlocked?`<span class="mts-lock">LV ${TOWER_UNLOCKS[type]||''}</span>`:`<span>${targetText}</span>`;
-
+        const mult=getUpgradeMultipliers(type);
+        const unlocked=this.game?this.game.isUnlocked(type):towerUnlockedInCampaign(type);
+        const isBeam=!!def.dps;
+        const dmgLabel=isBeam?'DPS':'DAMAGE';
+        const dmgVal=isBeam?Math.round(def.dps*mult.damage)+'/s':Math.round((def.damage||0)*mult.damage);
+        const rateVal=isBeam?'BEAM':(def.rate*mult.rate).toFixed(2)+'/s';
+        const rangeVal=(def.range*mult.range).toFixed(1);
+        const special=[];
+        if(def.splash)special.push('SPLASH '+def.splash+' UNITS');
+        if(def.chain)special.push('CHAIN '+def.chain+' TARGETS');
+        if(type==='laser')special.push('PIERCES SHIELDS');
+        if(type==='tesla')special.push('STUNS TARGETS');
+        if(type==='missile')special.push('HOMING');
+        const tier=Progress.data.upgrades[type]||0;
+        const lockBadge=unlocked?'':`<span class="mts-lock">LOCKED · MISSION ${TOWER_UNLOCKS[type]||1}</span>`;
         return `
-          <div class="mts-item" style="border-left:3px solid ${def.color}">
+          <div class="mts-item${unlocked?'':' locked'}" style="border-left:3px solid ${def.color}">
             <div class="mts-top">
               <span class="mts-name" style="color:${def.color}">${def.name}</span>
               <span class="mts-cost">${def.cost} CR</span>
             </div>
-            <div class="mts-meta">
+            <div class="mts-grid">
               <span>${dmgLabel}: <b>${dmgVal}</b></span>
-              <span>RNG: <b>${rangeText}</b></span>
-              <span>SPD: <b>${rateText}</b></span>
-              ${lockHtml}
+              <span>RANGE: <b>${rangeVal}</b></span>
+              <span>FIRE RATE: <b>${rateVal}</b></span>
+              <span>TARGETS: <b>${def.air?'AIR + GROUND':'GROUND'}</b></span>
+            </div>
+            ${special.length?`<div class="mts-special">${special.join(' · ')}</div>`:''}
+            <div class="mts-foot">
+              <span>MAX LV ${towerMaxLevel(type)}${tier>0?' · ARMORY T'+tier:''}</span>
+              ${lockBadge}
             </div>
           </div>`;
       }).join('');
     };
 
+    // Paneli STATS düyməsinin üstünə yerləşdir və hündürlüyünü ekrana sığdır.
+    const place=()=>{
+      const r=btn.getBoundingClientRect();
+      const gap=8, topLimit=58;
+      const bottom=Math.max(8,innerHeight-r.top+gap);
+      const maxH=Math.max(130,innerHeight-bottom-topLimit);
+      modal.style.bottom=bottom+'px';
+      modal.style.maxHeight=Math.min(maxH,innerHeight*0.7)+'px';
+    };
+
+    const close=()=>{
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden','true');
+      btn.classList.remove('active');
+      btn.setAttribute('aria-expanded','false');
+    };
+    const open=()=>{
+      if(!isMobileView())return;
+      renderStats();
+      place();
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden','false');
+      btn.classList.add('active');
+      btn.setAttribute('aria-expanded','true');
+      list.scrollTop=0;
+    };
+    this.closeMobileTowerStats=close;
+
     btn.onclick=(e)=>{
       e.stopPropagation();
-      const willOpen=modal.classList.contains('hidden');
-      if(willOpen){renderStats();modal.classList.remove('hidden');}
-      else{modal.classList.add('hidden');}
+      Audio.sfx('ui');
+      if(isOpen())close();else open();
     };
+    if(closeBtn)closeBtn.onclick=(e)=>{e.stopPropagation();close();};
 
-    if(closeBtn)closeBtn.onclick=(e)=>{
-      e.stopPropagation();
-      modal.classList.add('hidden');
-    };
+    // Kənara toxunanda bağla. Canvas touchend-də preventDefault edir, ona görə 'click' yox, 'pointerdown' dinləyirik.
+    document.addEventListener('pointerdown',(e)=>{
+      if(isOpen()&&!modal.contains(e.target)&&!btn.contains(e.target))close();
+    },true);
 
-    document.addEventListener('click',(e)=>{
-      if(!modal.classList.contains('hidden')&&!modal.contains(e.target)&&e.target!==btn){
-        modal.classList.add('hidden');
-      }
-    });
+    // Ekran dönəndə/ölçü dəyişəndə yenidən yerləşdir (desktop görünüşə keçsə bağla).
+    const relayout=()=>{if(!isOpen())return;if(!isMobileView())close();else place();};
+    addEventListener('resize',relayout);
+    addEventListener('orientationchange',()=>setTimeout(relayout,250));
   },
   updateTowerBar(){if(!this.game)return;
     $$('.tower-card').forEach(card=>{const t=card.dataset.type;
@@ -733,7 +770,7 @@ const UI={
   pause(on){
     if(!this.game||this.game.over)return;
     this.game.paused=on;
-    if(on){this.openModal('modal-pause');gameplayStop();Audio.sfx('ui');}
+    if(on){if(this.closeMobileTowerStats)this.closeMobileTowerStats();this.openModal('modal-pause');gameplayStop();Audio.sfx('ui');}
     else{this.closeModal('modal-pause');gameplayStart();}},
   openModal(id){$('#'+id).classList.add('open');},
   closeModal(id){$('#'+id).classList.remove('open');},

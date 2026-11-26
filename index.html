@@ -245,13 +245,13 @@
           <button id="emp-btn" class="btn small gold" disabled>EMP PULSE · READY</button>
           <button id="wave-btn">START WAVE</button>
           <button id="btn-tower-bar-toggle" class="btn small ghost" type="button" aria-expanded="true" aria-controls="tower-bar">HIDE TOWERS ▾</button>
+          <button id="btn-mobile-tower-stats" class="btn small" type="button" aria-label="Tower Stats" aria-expanded="false" aria-controls="mobile-tower-stats-modal">STATS</button>
         </div>
         <div id="tower-bar" class="glass"></div>
-        <button id="btn-mobile-tower-stats" type="button" aria-label="Tower Stats">STATS</button>
-        <div id="mobile-tower-stats-modal" class="hidden" role="dialog" aria-label="Tower Statistics">
+        <div id="mobile-tower-stats-modal" role="dialog" aria-label="Tower Statistics" aria-hidden="true">
           <div class="mts-head">
             <span>TOWER STATS</span>
-            <button id="btn-close-tower-stats" type="button">✕</button>
+            <button id="btn-close-tower-stats" type="button" aria-label="Close">✕</button>
           </div>
           <div id="mobile-tower-stats-list"></div>
         </div>
