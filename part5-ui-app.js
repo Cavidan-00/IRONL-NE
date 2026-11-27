@@ -559,23 +559,22 @@ const UI={
         if(type==='tesla')special.push('STUNS TARGETS');
         if(type==='missile')special.push('HOMING');
         const tier=Progress.data.upgrades[type]||0;
-        const lockBadge=unlocked?'':`<span class="mts-lock">LOCKED · MISSION ${TOWER_UNLOCKS[type]||1}</span>`;
+        const lockBadge=unlocked?'':`<span class="mts-lock">LOCKED · M${TOWER_UNLOCKS[type]||1}</span>`;
         return `
-          <div class="mts-item${unlocked?'':' locked'}" style="border-left:3px solid ${def.color}">
+          <div class="mts-item${unlocked?'':' locked'}" style="--tc:${def.color}">
             <div class="mts-top">
-              <span class="mts-name" style="color:${def.color}">${def.name}</span>
+              <span class="mts-name">${def.name}${lockBadge}</span>
               <span class="mts-cost">${def.cost} CR</span>
             </div>
             <div class="mts-grid">
-              <span>${dmgLabel}: <b>${dmgVal}</b></span>
-              <span>RANGE: <b>${rangeVal}</b></span>
-              <span>FIRE RATE: <b>${rateVal}</b></span>
-              <span>TARGETS: <b>${def.air?'AIR + GROUND':'GROUND'}</b></span>
+              <span>${dmgLabel} <b>${dmgVal}</b></span>
+              <span>RANGE <b>${rangeVal}</b></span>
+              <span>RATE <b>${rateVal}</b></span>
+              <span>HITS <b>${def.air?'AIR+GND':'GROUND'}</b></span>
             </div>
-            ${special.length?`<div class="mts-special">${special.join(' · ')}</div>`:''}
             <div class="mts-foot">
-              <span>MAX LV ${towerMaxLevel(type)}${tier>0?' · ARMORY T'+tier:''}</span>
-              ${lockBadge}
+              <span class="mts-special">${special.join(' · ')||'&nbsp;'}</span>
+              <span class="mts-lv">MAX LV ${towerMaxLevel(type)}${tier>0?' · T'+tier:''}</span>
             </div>
           </div>`;
       }).join('');
@@ -589,7 +588,13 @@ const UI={
       const maxH=Math.max(130,innerHeight-bottom-topLimit);
       modal.style.bottom=bottom+'px';
       modal.style.maxHeight=Math.min(maxH,innerHeight*0.7)+'px';
+      updateFade();
     };
+    // Aşağıda daha fazla kart varsa alt kenarda soluk gradyan göster.
+    const updateFade=()=>{
+      list.classList.toggle('more',list.scrollHeight-list.scrollTop-list.clientHeight>4);
+    };
+    list.addEventListener('scroll',updateFade,{passive:true});
 
     const close=()=>{
       modal.classList.remove('open');
@@ -606,6 +611,7 @@ const UI={
       btn.classList.add('active');
       btn.setAttribute('aria-expanded','true');
       list.scrollTop=0;
+      requestAnimationFrame(updateFade);
     };
     this.closeMobileTowerStats=close;
 
