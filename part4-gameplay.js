@@ -472,6 +472,11 @@ class GameWorld{
     this.onPointerLeave=this.handlePointerLeave.bind(this);
     this.onContext=this.handleContext.bind(this);
     this._onWheel=this.handleWheel.bind(this);
+    this._onTS=(e)=>this.onTouchStart(e);
+    this._onTM=(e)=>this.onTouchMove(e);
+    this._onTE=(e)=>this.onTouchEnd(e);
+    this._onTC=()=>{this.touchState=null;this._pinching=false;};
+    this._zoomFocal=null;this._pinching=false;
   }
   start(){this.buildScene();
     if(this.isEndless){
@@ -578,9 +583,10 @@ class GameWorld{
     c.addEventListener('contextmenu',this.onContext);
     c.addEventListener('wheel',this._onWheel,{passive:false});
     c.style.touchAction='none';
-    c.addEventListener('touchstart', this.onTouchStart.bind(this), { passive: false });
-    c.addEventListener('touchmove', this.onTouchMove.bind(this), { passive: false });
-    c.addEventListener('touchend', this.onTouchEnd.bind(this), { passive: false });
+    c.addEventListener('touchstart', this._onTS, { passive: false });
+    c.addEventListener('touchmove', this._onTM, { passive: false });
+    c.addEventListener('touchend', this._onTE, { passive: false });
+    c.addEventListener('touchcancel', this._onTC, { passive: false });
   }
   unbindEvents(){const c=this.renderer.domElement;
     c.removeEventListener('pointermove',this.onPointerMove);
@@ -589,9 +595,10 @@ class GameWorld{
     c.removeEventListener('pointerleave',this.onPointerLeave);
     c.removeEventListener('contextmenu',this.onContext);
     c.removeEventListener('wheel',this._onWheel);
-    c.removeEventListener('touchstart', this.onTouchStart);
-    c.removeEventListener('touchmove', this.onTouchMove);
-    c.removeEventListener('touchend', this.onTouchEnd);
+    c.removeEventListener('touchstart', this._onTS);
+    c.removeEventListener('touchmove', this._onTM);
+    c.removeEventListener('touchend', this._onTE);
+    c.removeEventListener('touchcancel', this._onTC);
   }
   handleWheel(e){
     if(this.paused||this.over)return;
@@ -612,6 +619,7 @@ class GameWorld{
     this.pointer.x=((e.clientX-r.left)/r.width)*2-1;
     this.pointer.y=-((e.clientY-r.top)/r.height)*2+1;}
   handlePointerMove(e){
+    if(e.pointerType==='touch')return;
     if(this.panState){
       const dx=e.clientX-this.panState.startScreenX;
       const dy=e.clientY-this.panState.startScreenY;
@@ -635,6 +643,7 @@ class GameWorld{
     this.updateHover();
   }
   handlePointerDown(e){
+    if(e.pointerType==='touch')return; // dokunma: onTouch* yolu yönetir (aksi halde parmak değer değmez seç/inşa eder)
     if(this.paused||this.over)return;Audio.ensure();
     // Pan start: right button (2) or middle button (1)
     if(e.button===1||e.button===2){
@@ -677,66 +686,100 @@ class GameWorld{
     if(this.pointer.x>-1.5)this.updateHover();
   }
   handlePointerLeave(){this.pointer.set(-2,-2);this.clearHover();}
-    onTouchStart(e){
+  /* ===== Dokunmatik kamera: tek parmak = kaydır, iki parmak = yakınlaştır + kaydır ===== */
+  _touchMid(t){
+    return {x:(t[0].clientX+t[1].clientX)/2,y:(t[0].clientY+t[1].clientY)/2,
+      d:Math.max(10,Math.hypot(t[0].clientX-t[1].clientX,t[0].clientY-t[1].clientY))};
+  }
+  _groundScales(zoom){
+    const h=this.renderer.domElement.clientHeight||innerHeight;
+    const wpp=2*((this.camBaseSize||26)/(zoom||1))/h;
+    const sinP=this.camBase.y/Math.hypot(this.camBase.y,this.camBase.z);
+    return {wpp,dz:wpp/sinP};
+  }
+  _focalFromMid(m){
+    const r=this.renderer.domElement.getBoundingClientRect();
+    this._zoomFocal={x:m.x-(r.left+r.width/2),y:m.y-(r.top+r.height/2)};
+  }
+  _beginPinch(t){
+    const ts=this.touchState||(this.touchState={});
+    const m=this._touchMid(t);
+    ts.mode='two';ts.gesture=true;ts.moved=true;
+    ts.pinchDist=m.d;ts.startZoom=this.targetZoom;ts.midX=m.x;ts.midY=m.y;
+    this._focalFromMid(m);
+    this._pinching=true;
+  }
+  // Yakınlaştırırken parmakların altındaki harita noktası yerinde kalsın.
+  _applyFocalZoom(z1,z2){
+    const f=this._zoomFocal;
+    if(!f||z1===z2)return;
+    const a=this._groundScales(z1),b=this._groundScales(z2);
+    const d=a.wpp-b.wpp,dd=a.dz-b.dz;
+    this.pan.x=clamp(this.pan.x+f.x*d,this.panMin,this.panMax);
+    this.pan.z=clamp(this.pan.z+f.y*dd,this.panMin,this.panMax);
+  }
+  onTouchStart(e){
     e.preventDefault();
-    if(e.touches.length===1){
-      this.touchState = { active: true, moved: false, startX: e.touches[0].clientX, startY: e.touches[0].clientY, lastX: e.touches[0].clientX, lastY: e.touches[0].clientY, isPinching: false };
-    } else if(e.touches.length===2){
-      if(!this.touchState) this.touchState = {};
-      this.touchState.active = false; this.touchState.isPinching = true;
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      this.touchState.pinchDist = Math.max(10, Math.hypot(dx, dy));
-      this.touchState.startZoom = this.targetZoom;
+    const t=e.targetTouches; // yalnızca bu canvas'a basan parmaklar (HUD düğmesine basan parmak sayılmaz)
+    if(t.length===1){
+      this.touchState={mode:'one',moved:false,gesture:false,startX:t[0].clientX,startY:t[0].clientY,lastX:t[0].clientX,lastY:t[0].clientY};
+      this._pinching=false;
+    }else if(t.length>=2){
+      this.cancelGhost();this.selectionBox.visible=false;
+      this.plots.forEach(p=>p.hover.visible=false);
+      this._beginPinch(t);
     }
   }
   onTouchMove(e){
     e.preventDefault();
-    if(!this.touchState) return;
-    if(e.touches.length===1 && this.touchState.active){
-      const stepDx = e.touches[0].clientX - this.touchState.lastX;
-      const stepDy = e.touches[0].clientY - this.touchState.lastY;
-      const totalMove = Math.hypot(e.touches[0].clientX - this.touchState.startX, e.touches[0].clientY - this.touchState.startY);
-      if(!this.touchState.moved && totalMove > 14){
-        this.touchState.moved = true;
-        this.cancelGhost(); this.selectionBox.visible = false;
-        this.plots.forEach(p => p.hover.visible = false);
+    const ts=this.touchState;
+    if(!ts)return;
+    const t=e.targetTouches;
+    if(ts.mode==='two'&&t.length>=2){
+      const m=this._touchMid(t);
+      this.targetZoom=clamp(ts.startZoom*(m.d/ts.pinchDist),this.zoomMin,this.zoomMax);
+      // iki parmağın orta noktası kadar kaydır (parmakları birebir takip eder)
+      const sc=this._groundScales(this.zoom);
+      this.pan.x=clamp(this.pan.x-(m.x-ts.midX)*sc.wpp,this.panMin,this.panMax);
+      this.pan.z=clamp(this.pan.z-(m.y-ts.midY)*sc.dz,this.panMin,this.panMax);
+      ts.midX=m.x;ts.midY=m.y;
+      this._focalFromMid(m);
+    }else if(ts.mode==='one'&&t.length===1){
+      const x=t[0].clientX,y=t[0].clientY;
+      if(!ts.moved&&Math.hypot(x-ts.startX,y-ts.startY)>14){
+        ts.moved=true;
+        this.cancelGhost();this.selectionBox.visible=false;
+        this.plots.forEach(p=>p.hover.visible=false);
       }
-      if(this.touchState.moved){
-        const canvasH = this.renderer.domElement.clientHeight || innerHeight;
-        const wpp = (2 * (this.camBaseSize / this.zoom)) / canvasH;
-        const pitchRad = Math.asin(this.camBase.y / Math.hypot(this.camBase.y, this.camBase.z));
-        const dzScale = wpp / Math.sin(pitchRad);
-        const dragFactor = 0.85;
-        this.pan.x = clamp(this.pan.x - stepDx * wpp * dragFactor, this.panMin, this.panMax);
-        this.pan.z = clamp(this.pan.z - stepDy * dzScale * dragFactor, this.panMin, this.panMax);
+      if(ts.moved){
+        const sc=this._groundScales(this.zoom),dragFactor=0.85;
+        this.pan.x=clamp(this.pan.x-(x-ts.lastX)*sc.wpp*dragFactor,this.panMin,this.panMax);
+        this.pan.z=clamp(this.pan.z-(y-ts.lastY)*sc.dz*dragFactor,this.panMin,this.panMax);
       }
-      this.touchState.lastX = e.touches[0].clientX;
-      this.touchState.lastY = e.touches[0].clientY;
-    } else if(e.touches.length===2 && this.touchState.isPinching){
-      const dx = e.touches[0].clientX - e.touches[1].clientX;
-      const dy = e.touches[0].clientY - e.touches[1].clientY;
-      const dist = Math.max(10, Math.hypot(dx, dy));
-      const ratio = dist / this.touchState.pinchDist;
-      this.targetZoom = clamp(this.touchState.startZoom * ratio, this.zoomMin, this.zoomMax);
+      ts.lastX=x;ts.lastY=y;
     }
   }
   onTouchEnd(e){
     e.preventDefault();
-    if(e.touches.length===0){
-      if(this.touchState && this.touchState.active && !this.touchState.moved && !this.touchState.isPinching){
-        // Barmaqla sadəcə klik (tık) edildisə
-        const touch = e.changedTouches[0];
-        const r = this.renderer.domElement.getBoundingClientRect();
-        this.pointer.x = ((touch.clientX - r.left) / r.width) * 2 - 1;
-        this.pointer.y = -((touch.clientY - r.top) / r.height) * 2 + 1;
+    const t=e.targetTouches,ts=this.touchState;
+    if(t.length===0){
+      // Sadece gerçek tek dokunuş (kaydırma/pinch olmadan) tık sayılır
+      if(ts&&ts.mode==='one'&&!ts.moved&&!ts.gesture){
+        const touch=e.changedTouches[0];
+        const r=this.renderer.domElement.getBoundingClientRect();
+        this.pointer.x=((touch.clientX-r.left)/r.width)*2-1;
+        this.pointer.y=-((touch.clientY-r.top)/r.height)*2+1;
         this.updateHover();
-        this.handlePointerDown({ button: 0, clientX: touch.clientX, clientY: touch.clientY, preventDefault: () => {} });
+        this.handlePointerDown({button:0,clientX:touch.clientX,clientY:touch.clientY,preventDefault:()=>{}});
       }
-      this.touchState = null;
-    } else if(e.touches.length===1){
-      this.touchState.isPinching = false; this.touchState.active = true;
-      this.touchState.startX = e.touches[0].clientX; this.touchState.startY = e.touches[0].clientY;
+      this.touchState=null;this._pinching=false;
+    }else if(ts&&t.length===1){
+      // İki parmaktan biri kalktı: kalan parmağın konumunu SIFIRDAN al (eski sıçrama hatası burada idi)
+      ts.mode='one';ts.gesture=true;ts.moved=true;
+      ts.startX=ts.lastX=t[0].clientX;ts.startY=ts.lastY=t[0].clientY;
+      this._pinching=false;
+    }else if(ts&&t.length>=2){
+      this._beginPinch(t); // 3→2 parmak: referansı yeniden al
     }
   }
   clearHover(){this.hoveredPlot=null;this.hoveredTower=null;
@@ -1009,6 +1052,14 @@ class GameWorld{
     if(this._panKeys.down)this.pan.z+=panSpeed;
     this.pan.x=clamp(this.pan.x,this.panMin,this.panMax);
     this.pan.z=clamp(this.pan.z,this.panMin,this.panMax);
+    // Smooth zoom interpolation
+    if(this.targetZoom!==undefined&&this.zoom!==this.targetZoom){
+      const prevZoom=this.zoom;
+      this.zoom=lerp(this.zoom,this.targetZoom,Math.min(1,sdt*12));
+      if(Math.abs(this.zoom-this.targetZoom)<0.001)this.zoom=this.targetZoom;
+      this._applyFocalZoom(prevZoom,this.zoom);
+      this._applyZoom();
+    }else if(this._zoomFocal&&!this._pinching){this._zoomFocal=null;}
     const px=this.pan.x,pz=this.pan.z;
     if(this.cameraShake>0){this.cameraShake=Math.max(0,this.cameraShake-sdt*3);
       this.camera.position.set(
@@ -1017,12 +1068,6 @@ class GameWorld{
         this.camBase.z+pz+rand(-1,1)*this.cameraShake);}
     else this.camera.position.set(this.camBase.x+px,this.camBase.y,this.camBase.z+pz);
     this.camera.lookAt(px,0,pz);
-    // Smooth zoom interpolation
-    if(this.targetZoom!==undefined&&this.zoom!==this.targetZoom){
-      this.zoom=lerp(this.zoom,this.targetZoom,Math.min(1,sdt*12));
-      if(Math.abs(this.zoom-this.targetZoom)<0.001)this.zoom=this.targetZoom;
-      this._applyZoom();
-    }
   }
   updateAirWarning(){
     let targetWave=this.phase==='prep'?this.waveIndex+1:this.waveIndex;
